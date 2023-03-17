@@ -1,0 +1,32 @@
+plugins {
+    id 'java'
+}
+
+group 'me.marcelohdez'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
+    // https://github.com/weisJ/darklaf/ dark and light themes + detection
+    implementation 'com.github.weisj:darklaf-core:3.0.2'
+
+    // https://mvnrepository.com/artifact/javazoom/jlayer
+    implementation 'javazoom:jlayer:1.0.1'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes "Main-Class": 'me.marcelohdez.looptube.LoopTube'
+    }
+}
