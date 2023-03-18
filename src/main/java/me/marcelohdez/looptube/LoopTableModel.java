@@ -5,14 +5,22 @@ import javax.swing.table.TableModel;
 import java.util.ArrayList;
 
 public class LoopTableModel implements TableModel {
-    private static final String COL_NUM = "#";
-    private static final String COL_NAME = "Name";
+    public static final String COL_NUM = "#";
+    public static final String COL_NAME = "Name";
     private static final String[] COLUMNS = {COL_NUM, COL_NAME};
 
     private final ArrayList<String> loopsList = new ArrayList<>();
 
     public void add(String item) {
         loopsList.add(item);
+    }
+
+    public void remove(int index) {
+        loopsList.remove(index);
+    }
+
+    public String get(int index) {
+        return loopsList.get(index);
     }
 
     @Override

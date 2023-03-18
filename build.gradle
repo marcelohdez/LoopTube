@@ -17,7 +17,7 @@ dependencies {
     // https://github.com/weisJ/darklaf/ dark and light themes + detection
     implementation 'com.github.weisj:darklaf-core:3.0.2'
 
-    // https://mvnrepository.com/artifact/javazoom/jlayer
+    // https://mvnrepository.com/artifact/javazoom/jlayer mp3 support
     implementation 'javazoom:jlayer:1.0.1'
 }
 
