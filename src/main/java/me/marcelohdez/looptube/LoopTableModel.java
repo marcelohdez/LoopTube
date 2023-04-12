@@ -19,6 +19,10 @@ public class LoopTableModel implements TableModel {
         loopsList.remove(index);
     }
 
+    public void clear() {
+        loopsList.clear();
+    }
+
     public String get(int index) {
         return loopsList.get(index);
     }
