@@ -38,6 +38,8 @@ public class DLWrapper {
             // check for specific known error type
             if (err.contains("is not a valid url")) {
                 res = DLResult.InvalidURL;
+            } else if (err.contains("urlopen error")) {
+                res = DLResult.URLOpenFail;
             }
 
             // print said error to console

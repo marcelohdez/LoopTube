@@ -55,7 +55,8 @@ public record AppController(AppModel model, AppView view) {
 
             switch (res) {
                 case InvalidURL -> new ErrorDialog(view, '\"' + url + "\" is not a valid URL!");
-                case Error -> new ErrorDialog(view, "An error occurred getting your video!");
+                case URLOpenFail -> new ErrorDialog(view, "Could not connect to URL! (Check your network?)");
+                case Error -> new ErrorDialog(view, "An error occurred getting your audio!");
             }
         } catch (IOException ex) {
             new ErrorDialog(view, ex.getMessage());
