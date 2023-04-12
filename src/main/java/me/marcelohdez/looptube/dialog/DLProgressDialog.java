@@ -21,7 +21,7 @@ public class DLProgressDialog extends LoopTubeDialog {
         setLocationRelativeTo(summoner);
 
         new SwingWorker<Integer, Boolean>() {
-            private final DLWrapper wrapper = new DLWrapper(url);
+            final DLWrapper wrapper = new DLWrapper(url);
             @Override
             protected Integer doInBackground() throws IOException, InterruptedException {
                 return wrapper.startAndWait();

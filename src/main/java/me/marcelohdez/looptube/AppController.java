@@ -8,10 +8,20 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
 import java.io.IOException;
 
 public record AppController(AppModel model, AppView view) {
+    private static final String LOOP_TUBE_DIR = // end with a separator to indicate as directory
+            System.getProperty("user.home") + File.separatorChar + ".LoopTube" + File.separatorChar;
+    public static final String SOURCES_DIR = LOOP_TUBE_DIR + "sources" + File.separatorChar;
+    public static final String LIBRARY_DIR = LOOP_TUBE_DIR + "library" + File.separatorChar;
+
     public void begin() {
+        System.out.println("Root @ " + LOOP_TUBE_DIR);
+        System.out.println("Sources @ " + SOURCES_DIR);
+        System.out.println("Library @ " + LIBRARY_DIR);
+
         view.getLoopsTable().setModel(model.getLoopsListModel());
         view.getLoopsTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         view.getLoopsTable().getColumn(LoopTableModel.COL_NUM).setMaxWidth(30); // arbitrary; stops column being massive
