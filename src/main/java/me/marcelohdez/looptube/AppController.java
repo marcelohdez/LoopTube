@@ -21,9 +21,7 @@ public record AppController(AppModel model, AppView view) {
     public static final String LIBRARY_DIR = LOOP_TUBE_DIR + "library" + File.separatorChar;
 
     public void begin() {
-        System.out.println("Root @ " + LOOP_TUBE_DIR);
-        System.out.println("Sources @ " + SOURCES_DIR);
-        System.out.println("Library @ " + LIBRARY_DIR);
+        System.out.printf("Root @ %s\nSources @ %s\nLibrary @ %s%n", LOOP_TUBE_DIR, SOURCES_DIR, LIBRARY_DIR);
 
         view.getLoopsTable().setModel(model.getLoopsListModel());
         view.getLoopsTable().addMouseListener(captureLoopSelections());
@@ -39,6 +37,7 @@ public record AppController(AppModel model, AppView view) {
 
         view.getAddLoopButton().addActionListener(e -> addLoop());
         view.getDeleteLoopButton().addActionListener(e -> deleteLoop());
+        view.getReloadLoopsButton().addActionListener(e -> reloadLoops());
 
         // set minimum size enough to fit everything:
         view.pack();

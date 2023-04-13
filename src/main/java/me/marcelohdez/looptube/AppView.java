@@ -10,6 +10,7 @@ public class AppView extends JFrame {
 
     private final JButton addLoopButton = new JButton("Add");
     private final JButton deleteLoopButton = new JButton("Delete");
+    private final JButton reloadLoopsButton = new JButton("↻");
 
     private final JLabel nowPlayingLabel = new JLabel("No loop playing");
     private final JButton previousButton = new JButton("⏮");
@@ -42,6 +43,10 @@ public class AppView extends JFrame {
         return deleteLoopButton;
     }
 
+    public JButton getReloadLoopsButton() {
+        return reloadLoopsButton;
+    }
+
     public JLabel getNowPlayingLabel() {
         return nowPlayingLabel;
     }
@@ -66,6 +71,7 @@ public class AppView extends JFrame {
         var editRow = new JPanel();
         editRow.add(addLoopButton);
         editRow.add(deleteLoopButton);
+        editRow.add(reloadLoopsButton);
 
         var pnl = new JPanel(new BorderLayout());
         pnl.add(playlistLabel, BorderLayout.PAGE_START);
