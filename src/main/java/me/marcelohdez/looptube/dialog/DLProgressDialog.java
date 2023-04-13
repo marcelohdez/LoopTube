@@ -3,7 +3,6 @@ package me.marcelohdez.looptube.dialog;
 import me.marcelohdez.looptube.ytdlp.DLResult;
 import me.marcelohdez.looptube.ytdlp.DLWrapper;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 
@@ -17,25 +16,26 @@ public class DLProgressDialog extends LoopTubeDialog {
         pack();
     }
 
-    public DLResult attempt(String url) throws IOException {
+    public DLResult attempt(final String url) throws IOException {
         setLocationRelativeTo(summoner);
 
-        new SwingWorker<Integer, Boolean>() {
-            final DLWrapper wrapper = new DLWrapper(url);
-            @Override
-            protected Integer doInBackground() throws IOException, InterruptedException {
-                return wrapper.startAndWait();
-            }
-            @Override
-            public void done() {
-                try {
-                    result = wrapper.getResult();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+        new Thread(() -> {
+            var wrapper = new DLWrapper(url);
+            try {
+                if (wrapper.startAndWait() != 0) {
+                    System.out.println("DLWrapper exited with non-zero value... ");
+                    result = DLResult.Error;
+                } else result = wrapper.getResult();
+            } catch (IOException | InterruptedException e) {
+                if (e instanceof IOException ioe && ioe.getMessage().startsWith("Cannot run program")) {
+                    result = DLResult.CannotRunYTDLP;
+                } else {
+                    e.printStackTrace();
+                    result = DLResult.Error;
                 }
-                dispose();
             }
-        }.execute();
+            dispose();
+        }).start();
 
         setVisible(true);
         return result;

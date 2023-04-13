@@ -59,6 +59,7 @@ public record AppController(AppModel model, AppView view) {
             switch (res) {
                 case InvalidURL -> new ErrorDialog(view, '\"' + url + "\" is not a valid URL!");
                 case URLOpenFail -> new ErrorDialog(view, "Could not connect to URL! (Check your network?)");
+                case CannotRunYTDLP -> new ErrorDialog(view, "Could not open yt-dlp! (Is it installed?)");
                 case Error -> new ErrorDialog(view, "An error occurred getting your audio!");
             }
         } catch (IOException ex) {
@@ -75,7 +76,9 @@ public record AppController(AppModel model, AppView view) {
 
     private void reloadLoops() {
         try {
-            readLoopsDir();
+            model.getLoopsListModel().clear();
+            readLoopsFromDir(SOURCES_DIR);
+            readLoopsFromDir(LIBRARY_DIR);
         } catch (NoSuchFileException ex) { // paths have not been created
             System.out.println('\n' + ex.getFile() + " has not been created, not reading loops.");
         } catch (IOException ex) {
@@ -86,21 +89,9 @@ public record AppController(AppModel model, AppView view) {
         view.getLoopsTable().repaint();
     }
 
-    private void readLoopsDir() throws IOException {
-        model.getLoopsListModel().clear();
-
-        var sourcesDir = new File(SOURCES_DIR);
-        try (var dirStream = Files.newDirectoryStream(sourcesDir.toPath())) {
-            for (var file : dirStream) {
-                var title = getMP3Title(file.getFileName().toString());
-                if (title.isEmpty()) continue; // skip non mp3's
-
-                model.getLoopsListModel().add(title.get());
-            }
-        }
-
-        var libraryDir = new File(LIBRARY_DIR);
-        try (var dirStream = Files.newDirectoryStream(libraryDir.toPath())) {
+    private void readLoopsFromDir(final String dir) throws IOException {
+        var loopsDir = new File(dir);
+        try (var dirStream = Files.newDirectoryStream(loopsDir.toPath())) {
             for (var file : dirStream) {
                 var title = getMP3Title(file.getFileName().toString());
                 if (title.isEmpty()) continue; // skip non mp3's
