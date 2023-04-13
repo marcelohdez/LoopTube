@@ -3,6 +3,7 @@ package me.marcelohdez.looptube;
 import me.marcelohdez.looptube.dialog.AddSourceDialog;
 import me.marcelohdez.looptube.dialog.DLProgressDialog;
 import me.marcelohdez.looptube.dialog.ErrorDialog;
+import me.marcelohdez.looptube.library.SongData;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,13 +13,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
-import java.util.Optional;
 
 public record AppController(AppModel model, AppView view) {
     private static final String LOOP_TUBE_DIR = // end with a separator to indicate as directory
-            System.getProperty("user.home") + File.separatorChar + ".LoopTube" + File.separatorChar;
-    public static final String SOURCES_DIR = LOOP_TUBE_DIR + "sources" + File.separatorChar;
-    public static final String LIBRARY_DIR = LOOP_TUBE_DIR + "library" + File.separatorChar;
+            System.getProperty("user.home") + File.separatorChar + ".LoopTube" + File.separator;
+    public static final String SOURCES_DIR = LOOP_TUBE_DIR + "sources" + File.separator;
+    public static final String LIBRARY_DIR = LOOP_TUBE_DIR + "library" + File.separator;
 
     public void begin() {
         System.out.printf("Root @ %s\nSources @ %s\nLibrary @ %s%n", LOOP_TUBE_DIR, SOURCES_DIR, LIBRARY_DIR);
@@ -92,11 +92,11 @@ public record AppController(AppModel model, AppView view) {
     private void readLoopsFromDir(final String dir) throws IOException {
         var loopsDir = new File(dir);
         try (var dirStream = Files.newDirectoryStream(loopsDir.toPath())) {
-            for (var file : dirStream) {
-                var title = getMP3Title(file.getFileName().toString());
-                if (title.isEmpty()) continue; // skip non mp3's
+            for (var path : dirStream) {
+                var maybeMp3 = SongData.from(path.toFile());
+                if (maybeMp3.isEmpty()) continue; // skip non mp3's
 
-                model.getLoopsListModel().add(title.get());
+                model.getLoopsListModel().add(maybeMp3.get());
             }
         }
     }
@@ -110,7 +110,7 @@ public record AppController(AppModel model, AppView view) {
             @Override
             public void mouseReleased(MouseEvent e) {
                 var row = view.getLoopsTable().getSelectedRow();
-                if (row >= 0) view.getNowPlayingLabel().setText(model.getLoopsListModel().get(row));
+                if (row >= 0) view.getNowPlayingLabel().setText(model.getLoopsListModel().get(row).toString());
             }
             @Override
             public void mouseEntered(MouseEvent e) {}

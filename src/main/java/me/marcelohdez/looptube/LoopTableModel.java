@@ -1,5 +1,7 @@
 package me.marcelohdez.looptube;
 
+import me.marcelohdez.looptube.library.SongData;
+
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.util.ArrayList;
@@ -9,9 +11,9 @@ public class LoopTableModel implements TableModel {
     public static final String COL_NAME = "Name";
     private static final String[] COLUMNS = {COL_NUM, COL_NAME};
 
-    private final ArrayList<String> loopsList = new ArrayList<>();
+    private final ArrayList<SongData> loopsList = new ArrayList<>();
 
-    public void add(String item) {
+    public void add(SongData item) {
         loopsList.add(item);
     }
 
@@ -23,7 +25,7 @@ public class LoopTableModel implements TableModel {
         loopsList.clear();
     }
 
-    public String get(int index) {
+    public SongData get(int index) {
         return loopsList.get(index);
     }
 
@@ -54,12 +56,14 @@ public class LoopTableModel implements TableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        return columnIndex == 0 ? rowIndex + 1 : loopsList.get(rowIndex);
+        return columnIndex == 0 ?
+                rowIndex + 1 : // row index
+                loopsList.get(rowIndex); // song data
     }
 
     @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        if (aValue instanceof String s) loopsList.set(rowIndex, s);
+        if (aValue instanceof String s) loopsList.get(rowIndex).setName(s);
     }
 
     @Override
