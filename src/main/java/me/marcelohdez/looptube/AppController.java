@@ -18,17 +18,16 @@ import java.nio.file.NoSuchFileException;
 public record AppController(AppModel model, AppView view) {
     private static final String LOOP_TUBE_DIR = // end with a separator to indicate as directory
             System.getProperty("user.home") + File.separatorChar + ".LoopTube" + File.separator;
-    public static final String SOURCES_DIR = LOOP_TUBE_DIR + "sources" + File.separator;
     public static final String LIBRARY_DIR = LOOP_TUBE_DIR + "library" + File.separator;
 
     public void begin() {
-        System.out.printf("Root @ %s\nSources @ %s\nLibrary @ %s%n", LOOP_TUBE_DIR, SOURCES_DIR, LIBRARY_DIR);
+        System.out.printf("Starting LoopTube with library @ %s", LIBRARY_DIR);
 
         view.getLoopsTable().setModel(model.getLoopsListModel());
         view.getLoopsTable().addMouseListener(captureLoopSelections());
         view.getLoopsTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         view.getLoopsTable().getColumn(LoopTableModel.COL_NUM).setMaxWidth(30); // arbitrary; stops column being massive
-        SwingUtilities.invokeLater(this::reloadLoops);
+        SwingUtilities.invokeLater(this::reloadSongs);
 
         // make initial table size comfortable
         var tableSize = view.getLoopsTable().getPreferredSize();
@@ -38,7 +37,7 @@ public record AppController(AppModel model, AppView view) {
 
         view.getAddLoopButton().addActionListener(e -> addLoop());
         view.getDeleteLoopButton().addActionListener(e -> deleteLoop());
-        view.getReloadLoopsButton().addActionListener(e -> reloadLoops());
+        view.getReloadLoopsButton().addActionListener(e -> reloadSongs());
 
         // set minimum size enough to fit everything:
         view.pack();
@@ -61,7 +60,7 @@ public record AppController(AppModel model, AppView view) {
             new ErrorDialog(view, ex.getMessage());
         }
 
-        SwingUtilities.invokeLater(this::reloadLoops);
+        SwingUtilities.invokeLater(this::reloadSongs);
     }
 
     private void deleteLoop() {
@@ -69,14 +68,13 @@ public record AppController(AppModel model, AppView view) {
         if (row < 0) return; // nothing selected
 
         model.getLoopsListModel().remove(row);
-        SwingUtilities.invokeLater(this::reloadLoops);
+        SwingUtilities.invokeLater(this::reloadSongs);
     }
 
-    private void reloadLoops() {
+    private void reloadSongs() {
         try {
             model.getLoopsListModel().clear();
-            readLoopsFromDir(SOURCES_DIR);
-            readLoopsFromDir(LIBRARY_DIR);
+            readSongsFromDisk();
         } catch (NoSuchFileException ex) { // paths have not been created
             System.out.println('\n' + ex.getFile() + " has not been created, not reading loops.");
         } catch (IOException ex) {
@@ -85,8 +83,8 @@ public record AppController(AppModel model, AppView view) {
         }
     }
 
-    private void readLoopsFromDir(final String dir) throws IOException {
-        var loopsDir = new File(dir);
+    private void readSongsFromDisk() throws IOException {
+        var loopsDir = new File(LIBRARY_DIR);
         try (var dirStream = Files.newDirectoryStream(loopsDir.toPath())) {
             for (var path : dirStream) {
                 var maybeMp3 = SongData.from(path.toFile());

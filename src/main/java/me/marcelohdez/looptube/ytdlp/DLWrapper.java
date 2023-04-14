@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class DLWrapper {
-    private static final String OUTPUT_DIR = AppController.SOURCES_DIR + "%(title)s";
+    private static final String OUTPUT_DIR = AppController.LIBRARY_DIR + "%(title)s";
     private final String url;
     private Process p;
 
