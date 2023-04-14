@@ -4,6 +4,7 @@ import me.marcelohdez.looptube.dialog.AddSourceDialog;
 import me.marcelohdez.looptube.dialog.DLProgressDialog;
 import me.marcelohdez.looptube.dialog.ErrorDialog;
 import me.marcelohdez.looptube.library.SongData;
+import me.marcelohdez.looptube.ytdlp.DLResult;
 
 import javax.swing.*;
 import java.awt.*;
@@ -55,13 +56,7 @@ public record AppController(AppModel model, AppView view) {
         var url = maybeUrl.get();
         try {
             var res = new DLProgressDialog(view).attempt(url);
-
-            switch (res) {
-                case InvalidURL -> new ErrorDialog(view, '\"' + url + "\" is not a valid URL!");
-                case URLOpenFail -> new ErrorDialog(view, "Could not connect to URL! (Check your network?)");
-                case CannotRunYTDLP -> new ErrorDialog(view, "Could not open yt-dlp! (Is it installed?)");
-                case Error -> new ErrorDialog(view, "An error occurred getting your audio!");
-            }
+            if (res != DLResult.Success) new ErrorDialog(view, res.message());
         } catch (IOException ex) {
             new ErrorDialog(view, ex.getMessage());
         }
