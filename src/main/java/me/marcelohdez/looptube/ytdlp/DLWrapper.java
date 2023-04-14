@@ -27,19 +27,18 @@ public class DLWrapper {
         return p.waitFor();
     }
 
-    public DLResult getResult() throws IOException {
+    /** Will throw a DLException if there was an error running yt-dlp */
+    public void verifyOutput() throws IOException, DLException {
         try (var br = new BufferedReader(new InputStreamReader(p.getErrorStream()))) {
             var err = br.readLine();
-            if (err == null) return DLResult.Success;
+            if (err == null) return; // no error!
 
-            var res = DLResult.Error; // SOME error occurred
             err = err.toLowerCase();
-
             // check for specific known error type
             if (err.contains("is not a valid url")) {
-                res = DLResult.InvalidURL;
+                throw new DLException("The URL given did not work! (Make sure it is a video!)");
             } else if (err.contains("urlopen error")) {
-                res = DLResult.URLOpenFail;
+                throw new DLException("Could not connect to URL! (Check your network?)");
             }
 
             // print said error to console
@@ -49,7 +48,7 @@ public class DLWrapper {
                 line = br.readLine();
             }
 
-            return res;
+            throw new DLException();
         }
     }
 }

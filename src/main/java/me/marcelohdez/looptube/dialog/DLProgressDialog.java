@@ -1,6 +1,6 @@
 package me.marcelohdez.looptube.dialog;
 
-import me.marcelohdez.looptube.ytdlp.DLResult;
+import me.marcelohdez.looptube.ytdlp.DLException;
 import me.marcelohdez.looptube.ytdlp.DLWrapper;
 
 import java.awt.*;
@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public class DLProgressDialog extends LoopTubeDialog {
     private final Component summoner;
-    private DLResult result;
+    private DLException exception;
 
     public DLProgressDialog(Component summoner) {
         super("Progress", "A download is in progress..");
@@ -16,7 +16,7 @@ public class DLProgressDialog extends LoopTubeDialog {
         pack();
     }
 
-    public DLResult attempt(final String url) throws IOException {
+    public void attempt(final String url) throws IOException, DLException {
         setLocationRelativeTo(summoner);
 
         new Thread(() -> {
@@ -24,20 +24,22 @@ public class DLProgressDialog extends LoopTubeDialog {
             try {
                 if (wrapper.startAndWait() != 0) {
                     System.out.println("DLWrapper exited with non-zero value... ");
-                    result = DLResult.Error;
-                } else result = wrapper.getResult();
+                    exception = new DLException();
+                } else wrapper.verifyOutput();
+            } catch (DLException e) {
+                exception = e;
             } catch (IOException | InterruptedException e) {
                 if (e instanceof IOException ioe && ioe.getMessage().startsWith("Cannot run program")) {
-                    result = DLResult.CannotRunYTDLP;
+                    exception = new DLException("Could not open yt-dlp! (Is it installed?)");
                 } else {
                     e.printStackTrace();
-                    result = DLResult.Error;
+                    exception = new DLException();
                 }
             }
             dispose();
         }).start();
 
         setVisible(true);
-        return result;
+        if (exception != null) throw exception;
     }
 }

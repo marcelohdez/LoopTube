@@ -4,7 +4,7 @@ import me.marcelohdez.looptube.dialog.AddSourceDialog;
 import me.marcelohdez.looptube.dialog.DLProgressDialog;
 import me.marcelohdez.looptube.dialog.ErrorDialog;
 import me.marcelohdez.looptube.library.SongData;
-import me.marcelohdez.looptube.ytdlp.DLResult;
+import me.marcelohdez.looptube.ytdlp.DLException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -54,9 +54,8 @@ public record AppController(AppModel model, AppView view) {
 
         var url = maybeUrl.get();
         try {
-            var res = new DLProgressDialog(view).attempt(url);
-            if (res != DLResult.Success) new ErrorDialog(view, res.message());
-        } catch (IOException ex) {
+            new DLProgressDialog(view).attempt(url);
+        } catch (DLException | IOException ex) {
             new ErrorDialog(view, ex.getMessage());
         }
 
