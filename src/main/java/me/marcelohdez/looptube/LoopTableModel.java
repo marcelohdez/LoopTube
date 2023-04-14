@@ -2,6 +2,7 @@ package me.marcelohdez.looptube;
 
 import me.marcelohdez.looptube.library.SongData;
 
+import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.util.ArrayList;
@@ -11,18 +12,23 @@ public class LoopTableModel implements TableModel {
     public static final String COL_NAME = "Name";
     private static final String[] COLUMNS = {COL_NUM, COL_NAME};
 
+    private final ArrayList<TableModelListener> listeners = new ArrayList<>();
     private final ArrayList<SongData> loopsList = new ArrayList<>();
 
     public void add(SongData item) {
-        loopsList.add(item);
+        if (loopsList.add(item))
+            propagateTableModelEvent(new TableModelEvent(this, loopsList.size() - 1));
     }
 
     public void remove(int index) {
-        loopsList.remove(index);
+        var e = loopsList.remove(index);
+        if (e.getFile().delete())
+            propagateTableModelEvent(new TableModelEvent(this, index, loopsList.size()));
     }
 
     public void clear() {
         loopsList.clear();
+        propagateTableModelEvent(new TableModelEvent(this));
     }
 
     public SongData get(int index) {
@@ -63,16 +69,21 @@ public class LoopTableModel implements TableModel {
 
     @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        if (aValue instanceof String s) loopsList.get(rowIndex).setName(s);
+        if (aValue instanceof String s && loopsList.get(rowIndex).setName(s))
+            propagateTableModelEvent(new TableModelEvent(this, rowIndex));
     }
 
     @Override
     public void addTableModelListener(TableModelListener l) {
-
+        listeners.add(l);
     }
 
     @Override
     public void removeTableModelListener(TableModelListener l) {
+        listeners.remove(l);
+    }
 
+    private void propagateTableModelEvent(TableModelEvent tme) {
+        for (var l : listeners) l.tableChanged(tme);
     }
 }

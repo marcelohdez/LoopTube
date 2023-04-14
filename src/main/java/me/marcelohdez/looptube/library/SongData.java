@@ -11,7 +11,18 @@ public class SongData {
 
     private SongData(File file) {
         this.file = file;
-        name = getMP3Title(file.getName());
+        var filename = file.getName();
+        name = filename.substring(0, filename.length() - EXTENSION.length());
+    }
+
+    public static Optional<SongData> from(File f) {
+        if (!f.getName().endsWith(EXTENSION)) return Optional.empty();
+
+        return Optional.of(new SongData(f));
+    }
+
+    public File getFile() {
+        return file;
     }
 
     @Override
@@ -30,15 +41,5 @@ public class SongData {
         }
 
         return res;
-    }
-
-    public static Optional<SongData> from(File f) {
-        if (!f.getName().endsWith(EXTENSION)) return Optional.empty();
-
-        return Optional.of(new SongData(f));
-    }
-
-    private static String getMP3Title(String filename) {
-        return filename.substring(0, filename.length() - EXTENSION.length());
     }
 }

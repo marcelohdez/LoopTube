@@ -71,7 +71,10 @@ public record AppController(AppModel model, AppView view) {
 
     private void deleteLoop() {
         var row = view.getLoopsTable().getSelectedRow();
-        if (row >= 0) model.getLoopsListModel().remove(row);
+        if (row < 0) return; // nothing selected
+
+        model.getLoopsListModel().remove(row);
+        SwingUtilities.invokeLater(this::reloadLoops);
     }
 
     private void reloadLoops() {
@@ -85,8 +88,6 @@ public record AppController(AppModel model, AppView view) {
             ex.printStackTrace();
             new ErrorDialog(view, "Could not read from library directory! I/O Exception.");
         }
-
-        view.getLoopsTable().repaint();
     }
 
     private void readLoopsFromDir(final String dir) throws IOException {
@@ -117,12 +118,5 @@ public record AppController(AppModel model, AppView view) {
             @Override
             public void mouseExited(MouseEvent e) {}
         };
-    }
-
-    private static Optional<String> getMP3Title(String filename) {
-        final var ext = ".mp3";
-        if (!filename.endsWith(ext)) return Optional.empty();
-
-        return Optional.of(filename.substring(0, filename.length() - ext.length()));
     }
 }
