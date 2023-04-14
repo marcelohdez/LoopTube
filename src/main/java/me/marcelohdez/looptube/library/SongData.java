@@ -6,7 +6,7 @@ import java.util.Optional;
 public class SongData {
     private static final String EXTENSION = ".mp3";
 
-    private final File file;
+    private File file;
     private String name;
 
     private SongData(File file) {
@@ -21,9 +21,13 @@ public class SongData {
 
     public boolean setName(String newName) {
         var parent = file.getParent();
-        var res = parent != null && file.renameTo(new File(parent + File.separator + newName + EXTENSION));
+        var newFile = new File(parent + File.separator + newName + EXTENSION);
+        var res = parent != null && file.renameTo(newFile);
 
-        if (res) name = newName;
+        if (res) {
+            name = newName;
+            file = newFile;
+        }
 
         return res;
     }
