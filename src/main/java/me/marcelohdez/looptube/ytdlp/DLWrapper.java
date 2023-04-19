@@ -8,15 +8,15 @@ import java.io.InputStreamReader;
 
 public class DLWrapper {
     private static final String OUTPUT_DIR = AppController.LIBRARY_DIR + "%(title)s";
-    private final String url;
-    private Process p;
 
-    public DLWrapper(String url) {
-        this.url = url;
-    }
+    private DLWrapper() {}
 
-    public int startAndWait() throws IOException, InterruptedException {
-        p = new ProcessBuilder(
+    /**
+     * @return exit value of yt-dlp process
+     * @throws DLException if there was an error running yt-dlp
+     */
+    public static int attemptAndWait(String url) throws IOException, InterruptedException, DLException {
+        var p = new ProcessBuilder(
                 "yt-dlp",
                 "-o", OUTPUT_DIR, // set output
                 "-x", // extract audio
@@ -24,14 +24,9 @@ public class DLWrapper {
                 url // url parameter
         ).start();
 
-        return p.waitFor();
-    }
-
-    /** Will throw a DLException if there was an error running yt-dlp */
-    public void verifyOutput() throws IOException, DLException {
         try (var br = new BufferedReader(new InputStreamReader(p.getErrorStream()))) {
             var err = br.readLine();
-            if (err == null) return; // no error!
+            if (err == null) return p.exitValue();
 
             err = err.toLowerCase();
             // check for specific known error type

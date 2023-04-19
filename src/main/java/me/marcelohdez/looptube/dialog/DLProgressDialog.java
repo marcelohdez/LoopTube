@@ -11,7 +11,7 @@ public class DLProgressDialog extends LoopTubeDialog {
     private DLException exception;
 
     public DLProgressDialog(Component summoner) {
-        super("Progress", "A download is in progress..");
+        super("Progress", "A download is in progress...");
         this.summoner = summoner;
         pack();
     }
@@ -20,12 +20,9 @@ public class DLProgressDialog extends LoopTubeDialog {
         setLocationRelativeTo(summoner);
 
         new Thread(() -> {
-            var wrapper = new DLWrapper(url);
             try {
-                if (wrapper.startAndWait() != 0) {
-                    System.out.println("DLWrapper exited with non-zero value... ");
-                    exception = new DLException();
-                } else wrapper.verifyOutput();
+                var res = DLWrapper.attemptAndWait(url);
+                if (res != 0) System.out.println("DLWrapper exited with non-zero value: " + res);
             } catch (DLException e) {
                 exception = e;
             } catch (IOException | InterruptedException e) {
