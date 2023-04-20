@@ -20,12 +20,6 @@ public class LoopTableModel implements TableModel {
             propagateTableModelEvent(new TableModelEvent(this, loopsList.size() - 1));
     }
 
-    public void remove(int index) {
-        var e = loopsList.remove(index);
-        if (e.getFile().delete())
-            propagateTableModelEvent(new TableModelEvent(this, index, loopsList.size()));
-    }
-
     public void clear() {
         loopsList.clear();
         propagateTableModelEvent(new TableModelEvent(this));

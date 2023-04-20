@@ -66,7 +66,16 @@ public record AppController(AppModel model, AppView view) {
         var row = view.getLoopsTable().getSelectedRow();
         if (row < 0) return; // nothing selected
 
-        model.getLoopsListModel().remove(row);
+        var file = model.getLoopsListModel().get(row).getFile();
+
+        try {
+            Desktop.getDesktop().moveToTrash(file);
+        } catch (UnsupportedOperationException ignored) {
+            if (!file.delete()) { // attempt to delete permanently
+                new ErrorDialog(view, "Could not delete " + file.getName());
+            }
+        }
+
         SwingUtilities.invokeLater(this::reloadSongs);
     }
 
