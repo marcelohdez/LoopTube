@@ -4,8 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 
 public class AppView extends JFrame {
-    private final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-    private final JLabel playlistLabel = new JLabel();
     private final JTable loopsTable = new JTable();
 
     private final JButton addLoopButton = new JButton("Add");
@@ -24,11 +22,6 @@ public class AppView extends JFrame {
 
         addPlaylistPanel();
         addPlayingView();
-        add(splitPane);
-    }
-
-    public JLabel getPlaylistLabel() {
-        return playlistLabel;
     }
 
     public JTable getLoopsTable() {
@@ -64,21 +57,15 @@ public class AppView extends JFrame {
     }
 
     private void addPlaylistPanel() {
-        var headingSize = playlistLabel.getFont().getSize() * 1.2f; // increase by 20%
-        playlistLabel.setFont(playlistLabel.getFont().deriveFont(headingSize));
-        playlistLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT);
-
         var editRow = new JPanel();
         editRow.add(addLoopButton);
         editRow.add(deleteLoopButton);
         editRow.add(reloadLoopsButton);
 
         var pnl = new JPanel(new BorderLayout());
-        pnl.add(playlistLabel, BorderLayout.PAGE_START);
         pnl.add(new JScrollPane(loopsTable));
         pnl.add(editRow, BorderLayout.PAGE_END);
-
-        splitPane.add(pnl);
+        add(pnl);
     }
 
     private void addPlayingView() {
@@ -95,6 +82,6 @@ public class AppView extends JFrame {
 
         view.add(labelRow);
         view.add(buttonRow);
-        splitPane.add(view);
+        add(view, BorderLayout.LINE_START);
     }
 }
