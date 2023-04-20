@@ -6,6 +6,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 public class LoopTableModel implements TableModel {
     public static final String COL_NUM = "#";
@@ -27,6 +28,10 @@ public class LoopTableModel implements TableModel {
 
     public SongData get(int index) {
         return loopsList.get(index);
+    }
+
+    public void sortAlphabetically() {
+        loopsList.sort(Comparator.comparing(SongData::toString));
     }
 
     @Override

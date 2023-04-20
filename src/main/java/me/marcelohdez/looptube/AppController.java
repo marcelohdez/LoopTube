@@ -83,6 +83,7 @@ public record AppController(AppModel model, AppView view) {
         try {
             model.getLoopsListModel().clear();
             readSongsFromDisk();
+            model.getLoopsListModel().sortAlphabetically();
         } catch (NoSuchFileException ex) { // paths have not been created
             System.out.println('\n' + ex.getFile() + " has not been created, not reading loops.");
         } catch (IOException ex) {
