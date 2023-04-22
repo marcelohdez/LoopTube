@@ -12,7 +12,6 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -63,7 +62,7 @@ public record AppController(AppModel model, AppView view) {
         var source = model.getLoopsListModel().get(row);
         try {
             model.getSongPlayer().setSource(source.getFile());
-        } catch (FileNotFoundException | JavaLayerException e) {
+        } catch (IOException | JavaLayerException e) {
             e.printStackTrace();
             new ErrorDialog(view, "Oops! Could not play file.");
         }
@@ -75,7 +74,7 @@ public record AppController(AppModel model, AppView view) {
             if (model.getSongPlayer().isPlaying()) {
                 model.getSongPlayer().stop();
             } else model.getSongPlayer().start();
-        } catch (FileNotFoundException | JavaLayerException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             new ErrorDialog(view, "Oops! Could not continue song.");
         }

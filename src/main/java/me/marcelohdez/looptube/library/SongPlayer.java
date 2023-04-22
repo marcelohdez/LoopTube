@@ -5,34 +5,54 @@ import javazoom.jl.player.advanced.AdvancedPlayer;
 import javazoom.jl.player.advanced.PlaybackEvent;
 import javazoom.jl.player.advanced.PlaybackListener;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import javax.swing.*;
+import java.io.*;
 
 public class SongPlayer {
+    private SwingWorker<Boolean, Integer> worker;
     private AdvancedPlayer player;
-    private int framePos = 0;
     private boolean playing = false;
+    private int framePos = 0;
 
     public boolean isPlaying() {
         return playing;
     }
 
-    public void setSource(File f) throws JavaLayerException, FileNotFoundException {
-        if (player != null) player.close();
+    public void setSource(File f) throws JavaLayerException, IOException {
+        stop();
 
-        var fis = new FileInputStream(f);
-        player = new AdvancedPlayer(fis);
+        player = new AdvancedPlayer(new FileInputStream(f));
         player.setPlayBackListener(consumePlaybackEvents());
     }
 
-    public void start() throws JavaLayerException, FileNotFoundException {
-        //setSource(f); // restart file input stream
-        player.play(framePos, Integer.MAX_VALUE);
+    public void start() {
+        if (worker == null) {
+            worker = new SwingWorker<>() {
+                @Override
+                protected Boolean doInBackground() throws JavaLayerException {
+                    var res = false;
+                    if (!isCancelled()) {
+                        res = player.play(framePos, Integer.MAX_VALUE);
+                        framePos = 0;
+                    }
+
+                    return res;
+                }
+                @Override
+                protected void done() {
+                    player.stop();
+                }
+            };
+        }
+
+        if (worker.getState() == SwingWorker.StateValue.PENDING) worker.execute();
     }
 
     public void stop() {
-        player.stop();
+        if (worker != null) {
+            worker.cancel(true);
+            worker = null;
+        }
     }
 
     private PlaybackListener consumePlaybackEvents() {
