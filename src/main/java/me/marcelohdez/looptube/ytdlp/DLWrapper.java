@@ -24,6 +24,8 @@ public class DLWrapper {
                 url // url parameter
         ).start();
 
+        p.waitFor();
+
         try (var br = new BufferedReader(new InputStreamReader(p.getErrorStream()))) {
             var err = br.readLine();
             if (err == null) return p.exitValue();
