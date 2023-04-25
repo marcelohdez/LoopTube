@@ -1,5 +1,6 @@
 package me.marcelohdez.looptube;
 
+import javazoom.jl.decoder.JavaLayerException;
 import me.marcelohdez.looptube.dialog.AddSourceDialog;
 import me.marcelohdez.looptube.dialog.DLProgressDialog;
 import me.marcelohdez.looptube.dialog.ErrorDialog;
@@ -35,9 +36,7 @@ public record AppController(AppModel model, AppView view) {
                 new Dimension((int)(tableSize.width * 1.5), tableSize.height)
         );
 
-        view.getAddLoopButton().addActionListener(e -> addLoop());
-        view.getDeleteLoopButton().addActionListener(e -> deleteLoop());
-        view.getReloadLoopsButton().addActionListener(e -> reloadSongs());
+        attachActionListeners();
 
         // set minimum size enough to fit everything:
         view.pack();
@@ -46,6 +45,39 @@ public record AppController(AppModel model, AppView view) {
         view.setSize(400, 250);
         view.setLocationRelativeTo(null); // center on screen
         view.setVisible(true);
+    }
+
+    private void attachActionListeners() {
+        view.getPauseButton().addActionListener(e -> pauseOrPlay());
+
+        view.getAddLoopButton().addActionListener(e -> addLoop());
+        view.getDeleteLoopButton().addActionListener(e -> deleteLoop());
+        view.getReloadLoopsButton().addActionListener(e -> reloadSongs());
+    }
+
+    private void playNewSong() {
+        var row = view.getLoopsTable().getSelectedRow();
+        if (row < 0) return;
+
+        var source = model.getLoopsListModel().get(row);
+        try {
+            model.getSongPlayer().setSource(source.getFile());
+        } catch (IOException | JavaLayerException e) {
+            e.printStackTrace();
+            new ErrorDialog(view, "Oops! Could not play file.");
+        }
+        pauseOrPlay();
+    }
+
+    private void pauseOrPlay() {
+        try {
+            if (model.getSongPlayer().isPlaying()) {
+                model.getSongPlayer().stop();
+            } else model.getSongPlayer().start();
+        } catch (Exception e) {
+            e.printStackTrace();
+            new ErrorDialog(view, "Oops! Could not continue song.");
+        }
     }
 
     private void addLoop() {
@@ -113,7 +145,10 @@ public record AppController(AppModel model, AppView view) {
             @Override
             public void mouseReleased(MouseEvent e) {
                 var row = view.getLoopsTable().getSelectedRow();
-                if (row >= 0) view.getNowPlayingLabel().setText(model.getLoopsListModel().get(row).toString());
+                if (row < 0) return;
+
+                playNewSong();
+                view.getNowPlayingLabel().setText(model.getLoopsListModel().get(row).toString());
             }
             @Override
             public void mouseEntered(MouseEvent e) {}
