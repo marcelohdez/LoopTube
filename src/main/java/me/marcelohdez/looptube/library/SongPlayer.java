@@ -1,5 +1,6 @@
 package me.marcelohdez.looptube.library;
 
+import javazoom.jl.decoder.Bitstream;
 import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.advanced.AdvancedPlayer;
 import javazoom.jl.player.advanced.PlaybackEvent;
@@ -8,64 +9,85 @@ import javazoom.jl.player.advanced.PlaybackListener;
 import javax.swing.*;
 import java.io.*;
 
+/**
+ * An ergonomic wrapper over jLayer's AdvancedPlayer, with support for
+ * stopping and resuming. Plays music on a worker thread to not stop GUI.
+ */
 public class SongPlayer {
     private SwingWorker<Boolean, Integer> worker;
+
+    private File source;
     private AdvancedPlayer player;
-    private boolean playing = false;
+    /** Milliseconds per frame, set when source is changed */
+    private double framerate = 0.0f;
+    /** Current/last stopped at position in MPEG frames */
     private int framePos = 0;
+    /** Whether we ignore the next stop position (used when starting new song) */
+    private boolean ignorePos = false;
 
     public boolean isPlaying() {
-        return playing;
+        return worker != null && !worker.isDone();
     }
 
+    /** Changes this SongPlayer's source file, resetting the current position */
     public void setSource(File f) throws JavaLayerException, IOException {
-        stop();
+        source = f;
+        framePos = 0;
+        ignorePos = true;
 
-        player = new AdvancedPlayer(new FileInputStream(f));
-        player.setPlayBackListener(consumePlaybackEvents());
+        var bs = new Bitstream(new FileInputStream(source));
+        framerate = bs.readFrame().ms_per_frame();
+        stop();
     }
 
-    public void start() {
-        if (worker == null) {
-            worker = new SwingWorker<>() {
-                @Override
-                protected Boolean doInBackground() throws JavaLayerException {
-                    var res = false;
-                    if (!isCancelled()) {
-                        res = player.play(framePos, Integer.MAX_VALUE);
-                        framePos = 0;
-                    }
+    /**
+     * Will start playing music from current source file on a worker thread
+     * starting at the current position (will be 0 if setSource was called
+     * before this method).
+     *
+     * <p>Will do nothing if currently playing or source has not been set.</p>
+     */
+    public void start() throws JavaLayerException, IOException {
+        if (isPlaying() || source == null) return;
+        createPlayerFromSource();
 
-                    return res;
-                }
-                @Override
-                protected void done() {
-                    player.stop();
-                }
-            };
-        }
+        worker = new SwingWorker<>() {
+            @Override
+            protected Boolean doInBackground() throws JavaLayerException {
+                if (!isCancelled()) return player.play(framePos, Integer.MAX_VALUE);
 
-        if (worker.getState() == SwingWorker.StateValue.PENDING) worker.execute();
+                return false;
+            }
+            @Override
+            protected void done() {
+                player.stop();
+            }
+        };
+
+        worker.execute();
     }
 
     public void stop() {
         if (worker != null) {
             worker.cancel(true);
             worker = null;
+            ignorePos = false;
         }
+    }
+
+    private void createPlayerFromSource() throws JavaLayerException, IOException {
+        if (source == null) return;
+        player = new AdvancedPlayer(new FileInputStream(source));
+        player.setPlayBackListener(consumePlaybackEvents());
     }
 
     private PlaybackListener consumePlaybackEvents() {
         return new PlaybackListener() {
             @Override
-            public void playbackStarted(PlaybackEvent evt) {
-                playing = true;
-            }
-
-            @Override
             public void playbackFinished(PlaybackEvent evt) {
-                playing = false;
-                framePos = evt.getFrame();
+                // after some digging, found out evt.getFrame actually returns milliseconds... here we fix it:
+                // we add to get the difference since last unpause
+                if (!ignorePos) framePos += (int) ((evt.getFrame() / framerate) + 0.5); // + 0.5 rounds to nearest int
             }
         };
     }

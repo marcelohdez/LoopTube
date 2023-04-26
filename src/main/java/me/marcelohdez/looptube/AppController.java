@@ -22,7 +22,7 @@ public record AppController(AppModel model, AppView view) {
     public static final String LIBRARY_DIR = LOOP_TUBE_DIR + "library" + File.separator;
 
     public void begin() {
-        System.out.printf("Starting LoopTube with library @ %s", LIBRARY_DIR);
+        System.out.printf("Starting LoopTube with library @ %s\n", LIBRARY_DIR);
 
         view.getLoopsTable().setModel(model.getLoopsListModel());
         view.getLoopsTable().addMouseListener(captureLoopSelections());
@@ -55,13 +55,9 @@ public record AppController(AppModel model, AppView view) {
         view.getReloadLoopsButton().addActionListener(e -> reloadSongs());
     }
 
-    private void playNewSong() {
-        var row = view.getLoopsTable().getSelectedRow();
-        if (row < 0) return;
-
-        var source = model.getLoopsListModel().get(row);
+    private void playNewSong(File f) {
         try {
-            model.getSongPlayer().setSource(source.getFile());
+            model.getSongPlayer().setSource(f);
         } catch (IOException | JavaLayerException e) {
             e.printStackTrace();
             new ErrorDialog(view, "Oops! Could not play file.");
@@ -147,8 +143,9 @@ public record AppController(AppModel model, AppView view) {
                 var row = view.getLoopsTable().getSelectedRow();
                 if (row < 0) return;
 
-                playNewSong();
-                view.getNowPlayingLabel().setText(model.getLoopsListModel().get(row).toString());
+                var source = model.getLoopsListModel().get(row);
+                playNewSong(source.getFile());
+                view.getNowPlayingLabel().setText(source.toString());
             }
             @Override
             public void mouseEntered(MouseEvent e) {}
