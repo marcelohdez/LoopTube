@@ -8,6 +8,7 @@ import javazoom.jl.player.advanced.PlaybackListener;
 
 import javax.swing.*;
 import java.io.*;
+import java.util.Optional;
 
 /**
  * An ergonomic wrapper over jLayer's AdvancedPlayer, with support for
@@ -22,11 +23,17 @@ public class SongPlayer {
     private double framerate = 0.0f;
     /** Current/last stopped at position in MPEG frames */
     private int framePos = 0;
+    /** System milliseconds when song is started, should only change in consumePlaybackEvents() */
+    private long startMS = -1;
     /** Whether to reset framePos next time player stops (used when starting new song) */
     private boolean resetPos = false;
 
     public boolean isPlaying() {
         return worker != null && !worker.isDone();
+    }
+
+    public Optional<File> getSource() {
+        return Optional.ofNullable(source);
     }
 
     /** Changes this SongPlayer's source file, resetting the current position */
@@ -76,6 +83,23 @@ public class SongPlayer {
         resetPos = false; // continue saving positions on next stops
     }
 
+    /**
+     * Will reset song if it is more than 3 seconds from start, and return false.
+     * Otherwise, it will only return true (but will continue playing if caller does not
+     * stop it).
+     *
+     * @return false if song was reset, true if caller should move to previous track.
+     */
+    public boolean previous() throws IOException, JavaLayerException {
+        if (System.currentTimeMillis() - startMS > 3000) {
+            setSource(source);
+            start();
+            return false;
+        }
+
+        return true;
+    }
+
     private void createPlayerFromSource() throws JavaLayerException, IOException {
         if (source == null) return;
         player = new AdvancedPlayer(new FileInputStream(source));
@@ -85,7 +109,12 @@ public class SongPlayer {
     private PlaybackListener consumePlaybackEvents() {
         return new PlaybackListener() {
             @Override
+            public void playbackStarted(PlaybackEvent evt) {
+                startMS = System.currentTimeMillis();
+            }
+            @Override
             public void playbackFinished(PlaybackEvent evt) {
+                startMS = -1; // no longer playing
                 // after some digging, found out evt.getFrame actually returns milliseconds... here we fix it:
                 // we add to get the difference since last unpause
                 framePos += (int) ((evt.getFrame() / framerate) + 0.5); // + 0.5 rounds to nearest int

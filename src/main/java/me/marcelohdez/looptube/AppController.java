@@ -48,6 +48,7 @@ public record AppController(AppModel model, AppView view) {
     }
 
     private void attachActionListeners() {
+        view.getPreviousButton().addActionListener(e -> previousSong());
         view.getPauseButton().addActionListener(e -> pauseOrPlay());
 
         view.getAddLoopButton().addActionListener(e -> addLoop());
@@ -55,14 +56,48 @@ public record AppController(AppModel model, AppView view) {
         view.getReloadLoopsButton().addActionListener(e -> reloadSongs());
     }
 
-    private void playNewSong(File f) {
+    private void previousSong() {
         try {
-            model.getSongPlayer().setSource(f);
+            if (model.getSongPlayer().previous()) {
+                var maybeFile = model.getSongPlayer().getSource();
+                if (maybeFile.isEmpty()) return;
+
+                var playingIndex = findSongFileIndex(maybeFile.get());
+                if (playingIndex == -1) return;
+
+                var songList = model.getLoopsListModel();
+                // get previous track, or loop to last track
+                if (playingIndex > 0) {
+                    playNewSong(songList.get(playingIndex - 1));
+                } else playNewSong(songList.get(songList.getRowCount() - 1));
+            }
+        } catch (IOException | JavaLayerException e) {
+            e.printStackTrace();
+            new ErrorDialog(view, "Oops! Could not rewind.");
+        }
+    }
+
+    private int findSongFileIndex(File f) {
+        var songList = model.getLoopsListModel();
+
+        for (int i = 0; i < songList.getRowCount(); i++) {
+            if (songList.get(i).getFile() == f) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private void playNewSong(SongData song) {
+        try {
+            model.getSongPlayer().setSource(song.getFile());
+            view.getNowPlayingLabel().setText(song.toString());
+            pauseOrPlay();
         } catch (IOException | JavaLayerException e) {
             e.printStackTrace();
             new ErrorDialog(view, "Oops! Could not play file.");
         }
-        pauseOrPlay();
     }
 
     private void pauseOrPlay() {
@@ -145,9 +180,7 @@ public record AppController(AppModel model, AppView view) {
                 var row = view.getLoopsTable().rowAtPoint(e.getPoint());
                 if (row < 0) return;
 
-                var source = model.getLoopsListModel().get(row);
-                playNewSong(source.getFile());
-                view.getNowPlayingLabel().setText(source.toString());
+                playNewSong(model.getLoopsListModel().get(row));
             }
             @Override
             public void mouseEntered(MouseEvent e) {}
