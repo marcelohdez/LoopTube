@@ -22,8 +22,8 @@ public class SongPlayer {
     private double framerate = 0.0f;
     /** Current/last stopped at position in MPEG frames */
     private int framePos = 0;
-    /** Whether we ignore the next stop position (used when starting new song) */
-    private boolean ignorePos = false;
+    /** Whether to reset framePos next time player stops (used when starting new song) */
+    private boolean resetPos = false;
 
     public boolean isPlaying() {
         return worker != null && !worker.isDone();
@@ -33,7 +33,7 @@ public class SongPlayer {
     public void setSource(File f) throws JavaLayerException, IOException {
         source = f;
         framePos = 0;
-        ignorePos = true;
+        resetPos = true;
 
         var bs = new Bitstream(new FileInputStream(source));
         framerate = bs.readFrame().ms_per_frame();
@@ -60,7 +60,8 @@ public class SongPlayer {
             }
             @Override
             protected void done() {
-                player.stop();
+                // player already stops upon ending, so we only do it if cancelled: stops a NullPointerException
+                if (isCancelled()) player.stop();
             }
         };
 
@@ -71,8 +72,8 @@ public class SongPlayer {
         if (worker != null) {
             worker.cancel(true);
             worker = null;
-            ignorePos = false;
         }
+        resetPos = false; // continue saving positions on next stops
     }
 
     private void createPlayerFromSource() throws JavaLayerException, IOException {
@@ -87,7 +88,8 @@ public class SongPlayer {
             public void playbackFinished(PlaybackEvent evt) {
                 // after some digging, found out evt.getFrame actually returns milliseconds... here we fix it:
                 // we add to get the difference since last unpause
-                if (!ignorePos) framePos += (int) ((evt.getFrame() / framerate) + 0.5); // + 0.5 rounds to nearest int
+                framePos += (int) ((evt.getFrame() / framerate) + 0.5); // + 0.5 rounds to nearest int
+                if (resetPos) framePos = 0;
             }
         };
     }
