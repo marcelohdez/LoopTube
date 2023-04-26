@@ -50,6 +50,7 @@ public record AppController(AppModel model, AppView view) {
     private void attachActionListeners() {
         view.getPreviousButton().addActionListener(e -> previousSong());
         view.getPauseButton().addActionListener(e -> pauseOrPlay());
+        view.getSkipButton().addActionListener(e -> nextSong());
 
         view.getAddLoopButton().addActionListener(e -> addLoop());
         view.getDeleteLoopButton().addActionListener(e -> deleteLoop());
@@ -58,25 +59,44 @@ public record AppController(AppModel model, AppView view) {
 
     private void previousSong() {
         try {
-            if (model.getSongPlayer().previous()) {
-                var maybeFile = model.getSongPlayer().getSource();
-                if (maybeFile.isEmpty()) return;
+            if (!model.getSongPlayer().previous()) return;
 
-                var playingIndex = findSongFileIndex(maybeFile.get());
-                if (playingIndex == -1) return;
+            var maybeFile = model.getSongPlayer().getSource();
+            if (maybeFile.isEmpty()) return;
 
-                var songList = model.getLoopsListModel();
-                // get previous track, or loop to last track
-                if (playingIndex > 0) {
-                    playNewSong(songList.get(playingIndex - 1));
-                } else playNewSong(songList.get(songList.getRowCount() - 1));
-            }
+            var playingIndex = findSongFileIndex(maybeFile.get());
+            if (playingIndex == -1) return;
+
+            var songList = model.getLoopsListModel();
+            // get previous track, or loop to last track
+            if (playingIndex > 0) {
+                playNewSong(songList.get(playingIndex - 1));
+            } else playNewSong(songList.get(songList.getRowCount() - 1));
         } catch (IOException | JavaLayerException e) {
             e.printStackTrace();
             new ErrorDialog(view, "Oops! Could not rewind.");
         }
     }
 
+    private void nextSong() {
+        var maybeFile = model.getSongPlayer().getSource();
+        if (maybeFile.isEmpty()) return;
+
+        var playingIndex = findSongFileIndex(maybeFile.get());
+        if (playingIndex == -1) return;
+
+        var songsList = model.getLoopsListModel();
+        if (playingIndex == songsList.getRowCount() - 1) {
+            playNewSong(songsList.get(0));
+        } else {
+            playNewSong(songsList.get(playingIndex + 1));
+        }
+    }
+
+    /**
+     * Will find a matching song file in the model's songs list.
+     * @return the index of the song found, -1 otherwise.
+     */
     private int findSongFileIndex(File f) {
         var songList = model.getLoopsListModel();
 
