@@ -4,11 +4,11 @@ import javax.swing.*;
 import java.awt.*;
 
 public class AppView extends JFrame {
-    private final JTable loopsTable = new JTable();
+    private final JTable songsTable = new JTable();
 
-    private final JButton addLoopButton = new JButton("Add");
-    private final JButton deleteLoopButton = new JButton("Delete");
-    private final JButton reloadLoopsButton = new JButton("↻");
+    private final JButton addSongButton = new JButton("Add");
+    private final JButton deleteSongButton = new JButton("Delete");
+    private final JButton reloadSongsButton = new JButton("↻");
 
     private final JLabel nowPlayingLabel = new JLabel("No loop playing");
     private final JButton previousButton = new JButton("⏮");
@@ -24,20 +24,20 @@ public class AppView extends JFrame {
         addPlayingView();
     }
 
-    public JTable getLoopsTable() {
-        return loopsTable;
+    public JTable getSongsTable() {
+        return songsTable;
     }
 
-    public JButton getAddLoopButton() {
-        return addLoopButton;
+    public JButton getAddSongButton() {
+        return addSongButton;
     }
 
-    public JButton getDeleteLoopButton() {
-        return deleteLoopButton;
+    public JButton getDeleteSongButton() {
+        return deleteSongButton;
     }
 
-    public JButton getReloadLoopsButton() {
-        return reloadLoopsButton;
+    public JButton getReloadSongsButton() {
+        return reloadSongsButton;
     }
 
     public JLabel getNowPlayingLabel() {
@@ -58,12 +58,12 @@ public class AppView extends JFrame {
 
     private void addPlaylistPanel() {
         var editRow = new JPanel();
-        editRow.add(addLoopButton);
-        editRow.add(deleteLoopButton);
-        editRow.add(reloadLoopsButton);
+        editRow.add(addSongButton);
+        editRow.add(deleteSongButton);
+        editRow.add(reloadSongsButton);
 
         var pnl = new JPanel(new BorderLayout());
-        pnl.add(new JScrollPane(loopsTable));
+        pnl.add(new JScrollPane(songsTable));
         pnl.add(editRow, BorderLayout.PAGE_END);
         add(pnl);
     }

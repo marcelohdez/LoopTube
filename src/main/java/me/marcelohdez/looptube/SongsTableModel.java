@@ -8,35 +8,35 @@ import javax.swing.table.TableModel;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-public class LoopTableModel implements TableModel {
+public class SongsTableModel implements TableModel {
     public static final String COL_NUM = "#";
     public static final String COL_NAME = "Name";
     private static final String[] COLUMNS = {COL_NUM, COL_NAME};
 
     private final ArrayList<TableModelListener> listeners = new ArrayList<>();
-    private final ArrayList<SongData> loopsList = new ArrayList<>();
+    private final ArrayList<SongData> songsList = new ArrayList<>();
 
     public void add(SongData item) {
-        if (loopsList.add(item))
-            propagateTableModelEvent(new TableModelEvent(this, loopsList.size() - 1));
+        if (songsList.add(item))
+            propagateTableModelEvent(new TableModelEvent(this, songsList.size() - 1));
     }
 
     public void clear() {
-        loopsList.clear();
+        songsList.clear();
         propagateTableModelEvent(new TableModelEvent(this));
     }
 
     public SongData get(int index) {
-        return loopsList.get(index);
+        return songsList.get(index);
     }
 
     public void sortAlphabetically() {
-        loopsList.sort(Comparator.comparing(SongData::toString));
+        songsList.sort(Comparator.comparing(SongData::toString));
     }
 
     @Override
     public int getRowCount() {
-        return loopsList.size();
+        return songsList.size();
     }
 
     @Override
@@ -63,12 +63,12 @@ public class LoopTableModel implements TableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         return columnIndex == 0 ?
                 rowIndex + 1 : // row index
-                loopsList.get(rowIndex); // song data
+                songsList.get(rowIndex); // song data
     }
 
     @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        if (aValue instanceof String s && loopsList.get(rowIndex).setName(s))
+        if (aValue instanceof String s && songsList.get(rowIndex).setName(s))
             propagateTableModelEvent(new TableModelEvent(this, rowIndex));
     }
 
