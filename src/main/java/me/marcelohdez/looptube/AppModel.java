@@ -3,11 +3,11 @@ package me.marcelohdez.looptube;
 import me.marcelohdez.looptube.library.SongPlayer;
 
 public class AppModel {
-    private final LoopTableModel loopsListModel = new LoopTableModel();
+    private final SongsTableModel songsTableModel = new SongsTableModel();
     private final SongPlayer songPlayer = new SongPlayer();
 
-    public LoopTableModel getLoopsListModel() {
-        return loopsListModel;
+    public SongsTableModel getSongsTableModel() {
+        return songsTableModel;
     }
 
     public SongPlayer getSongPlayer() {

@@ -22,17 +22,17 @@ public record AppController(AppModel model, AppView view) {
     public static final String LIBRARY_DIR = LOOP_TUBE_DIR + "library" + File.separator;
 
     public void begin() {
-        System.out.printf("Starting LoopTube with library @ %s", LIBRARY_DIR);
+        System.out.printf("Starting LoopTube with library @ %s\n", LIBRARY_DIR);
 
-        view.getLoopsTable().setModel(model.getLoopsListModel());
-        view.getLoopsTable().addMouseListener(captureLoopSelections());
-        view.getLoopsTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        view.getLoopsTable().getColumn(LoopTableModel.COL_NUM).setMaxWidth(30); // arbitrary; stops column being massive
+        view.getSongsTable().setModel(model.getSongsTableModel());
+        view.getSongsTable().addMouseListener(captureSongSelections());
+        view.getSongsTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        view.getSongsTable().getColumn(SongsTableModel.COL_NUM).setMaxWidth(30); // arbitrary; stops column being massive
         SwingUtilities.invokeLater(this::reloadSongs);
 
         // make initial table size comfortable
-        var tableSize = view.getLoopsTable().getPreferredSize();
-        view.getLoopsTable().setPreferredScrollableViewportSize(
+        var tableSize = view.getSongsTable().getPreferredSize();
+        view.getSongsTable().setPreferredScrollableViewportSize(
                 new Dimension((int)(tableSize.width * 1.5), tableSize.height)
         );
 
@@ -48,25 +48,76 @@ public record AppController(AppModel model, AppView view) {
     }
 
     private void attachActionListeners() {
+        view.getPreviousButton().addActionListener(e -> previousSong());
         view.getPauseButton().addActionListener(e -> pauseOrPlay());
+        view.getSkipButton().addActionListener(e -> nextSong());
 
-        view.getAddLoopButton().addActionListener(e -> addLoop());
-        view.getDeleteLoopButton().addActionListener(e -> deleteLoop());
-        view.getReloadLoopsButton().addActionListener(e -> reloadSongs());
+        view.getAddSongButton().addActionListener(e -> addSong());
+        view.getDeleteSongButton().addActionListener(e -> deleteSong());
+        view.getReloadSongsButton().addActionListener(e -> reloadSongs());
     }
 
-    private void playNewSong() {
-        var row = view.getLoopsTable().getSelectedRow();
-        if (row < 0) return;
-
-        var source = model.getLoopsListModel().get(row);
+    private void previousSong() {
         try {
-            model.getSongPlayer().setSource(source.getFile());
+            if (!model.getSongPlayer().previous()) return;
+
+            var maybeFile = model.getSongPlayer().getSource();
+            if (maybeFile.isEmpty()) return;
+
+            var playingIndex = findSongFileIndex(maybeFile.get());
+            if (playingIndex == -1) return;
+
+            var songList = model.getSongsTableModel();
+            // get previous track, or loop to last track
+            if (playingIndex > 0) {
+                playNewSong(songList.get(playingIndex - 1));
+            } else playNewSong(songList.get(songList.getRowCount() - 1));
+        } catch (IOException | JavaLayerException e) {
+            e.printStackTrace();
+            new ErrorDialog(view, "Oops! Could not rewind.");
+        }
+    }
+
+    private void nextSong() {
+        var maybeFile = model.getSongPlayer().getSource();
+        if (maybeFile.isEmpty()) return;
+
+        var playingIndex = findSongFileIndex(maybeFile.get());
+        if (playingIndex == -1) return;
+
+        var songsList = model.getSongsTableModel();
+        if (playingIndex == songsList.getRowCount() - 1) {
+            playNewSong(songsList.get(0));
+        } else {
+            playNewSong(songsList.get(playingIndex + 1));
+        }
+    }
+
+    /**
+     * Will find a matching song file in the model's songs list.
+     * @return the index of the song found, -1 otherwise.
+     */
+    private int findSongFileIndex(File f) {
+        var songList = model.getSongsTableModel();
+
+        for (int i = 0; i < songList.getRowCount(); i++) {
+            if (songList.get(i).getFile() == f) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private void playNewSong(SongData song) {
+        try {
+            model.getSongPlayer().setSource(song.getFile());
+            view.getNowPlayingLabel().setText(song.toString());
+            pauseOrPlay();
         } catch (IOException | JavaLayerException e) {
             e.printStackTrace();
             new ErrorDialog(view, "Oops! Could not play file.");
         }
-        pauseOrPlay();
     }
 
     private void pauseOrPlay() {
@@ -80,7 +131,7 @@ public record AppController(AppModel model, AppView view) {
         }
     }
 
-    private void addLoop() {
+    private void addSong() {
         var maybeUrl = new AddSourceDialog(view).response();
         if (maybeUrl.isEmpty()) return;
 
@@ -94,11 +145,11 @@ public record AppController(AppModel model, AppView view) {
         SwingUtilities.invokeLater(this::reloadSongs);
     }
 
-    private void deleteLoop() {
-        var row = view.getLoopsTable().getSelectedRow();
+    private void deleteSong() {
+        var row = view.getSongsTable().getSelectedRow();
         if (row < 0) return; // nothing selected
 
-        var file = model.getLoopsListModel().get(row).getFile();
+        var file = model.getSongsTableModel().get(row).getFile();
 
         try {
             Desktop.getDesktop().moveToTrash(file);
@@ -113,9 +164,9 @@ public record AppController(AppModel model, AppView view) {
 
     private void reloadSongs() {
         try {
-            model.getLoopsListModel().clear();
+            model.getSongsTableModel().clear();
             readSongsFromDisk();
-            model.getLoopsListModel().sortAlphabetically();
+            model.getSongsTableModel().sortAlphabetically();
         } catch (NoSuchFileException ex) { // paths have not been created
             System.out.println('\n' + ex.getFile() + " has not been created, not reading loops.");
         } catch (IOException ex) {
@@ -131,12 +182,12 @@ public record AppController(AppModel model, AppView view) {
                 var maybeMp3 = SongData.from(path.toFile());
                 if (maybeMp3.isEmpty()) continue; // skip non mp3's
 
-                model.getLoopsListModel().add(maybeMp3.get());
+                model.getSongsTableModel().add(maybeMp3.get());
             }
         }
     }
 
-    private MouseListener captureLoopSelections() {
+    private MouseListener captureSongSelections() {
         return new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {}
@@ -144,11 +195,12 @@ public record AppController(AppModel model, AppView view) {
             public void mousePressed(MouseEvent e) {}
             @Override
             public void mouseReleased(MouseEvent e) {
-                var row = view.getLoopsTable().getSelectedRow();
+                if (e.getButton() != MouseEvent.BUTTON1) return;
+
+                var row = view.getSongsTable().rowAtPoint(e.getPoint());
                 if (row < 0) return;
 
-                playNewSong();
-                view.getNowPlayingLabel().setText(model.getLoopsListModel().get(row).toString());
+                playNewSong(model.getSongsTableModel().get(row));
             }
             @Override
             public void mouseEntered(MouseEvent e) {}
