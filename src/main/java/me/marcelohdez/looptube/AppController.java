@@ -140,7 +140,9 @@ public record AppController(AppModel model, AppView view) {
             public void mousePressed(MouseEvent e) {}
             @Override
             public void mouseReleased(MouseEvent e) {
-                var row = view.getLoopsTable().getSelectedRow();
+                if (e.getButton() != MouseEvent.BUTTON1) return;
+
+                var row = view.getLoopsTable().rowAtPoint(e.getPoint());
                 if (row < 0) return;
 
                 var source = model.getLoopsListModel().get(row);
