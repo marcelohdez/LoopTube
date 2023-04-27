@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'me.marcelohdez'
-version '1.0-SNAPSHOT'
+version '0.1.0'
 
 repositories {
     mavenCentral()
@@ -28,5 +28,10 @@ test {
 jar {
     manifest {
         attributes "Main-Class": 'me.marcelohdez.looptube.LoopTube'
+    }
+    // build an uber jar, with all the above dependencies included:
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
