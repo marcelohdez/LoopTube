@@ -4,7 +4,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-class LoopTubeDialog extends JDialog {
+abstract class LoopTubeDialog extends JDialog {
     protected final JLabel label = new JLabel();
 
     public LoopTubeDialog(String title, String text) {

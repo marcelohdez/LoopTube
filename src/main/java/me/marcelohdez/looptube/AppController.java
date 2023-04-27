@@ -4,6 +4,8 @@ import javazoom.jl.decoder.JavaLayerException;
 import me.marcelohdez.looptube.dialog.AddSourceDialog;
 import me.marcelohdez.looptube.dialog.DLProgressDialog;
 import me.marcelohdez.looptube.dialog.ErrorDialog;
+import me.marcelohdez.looptube.dialog.TrimDialog;
+import me.marcelohdez.looptube.ffmpeg.TrimException;
 import me.marcelohdez.looptube.library.SongData;
 import me.marcelohdez.looptube.ytdlp.DLException;
 
@@ -15,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.text.ParseException;
 
 public record AppController(AppModel model, AppView view) {
     private static final String LOOP_TUBE_DIR = // end with a separator to indicate as directory
@@ -54,6 +57,7 @@ public record AppController(AppModel model, AppView view) {
 
         view.getAddSongButton().addActionListener(e -> addSong());
         view.getDeleteSongButton().addActionListener(e -> deleteSong());
+        view.getTrimSongButton().addActionListener(e -> trimSong());
         view.getReloadSongsButton().addActionListener(e -> reloadSongs());
     }
 
@@ -160,6 +164,19 @@ public record AppController(AppModel model, AppView view) {
         }
 
         SwingUtilities.invokeLater(this::reloadSongs);
+    }
+
+    private void trimSong() {
+        var row = view.getSongsTable().getSelectedRow();
+        if (row < 0) return;
+
+        try {
+            var res = new TrimDialog(view, model.getSongsTableModel().get(row)).response();
+            if (res) reloadSongs();
+        } catch (ParseException | TrimException e) {
+            e.printStackTrace();
+            new ErrorDialog(view, e.getMessage());
+        }
     }
 
     private void reloadSongs() {

@@ -6,13 +6,14 @@ import java.awt.*;
 public class AppView extends JFrame {
     private final JTable songsTable = new JTable();
 
+    private final JButton trimSongButton = new JButton("✂");
     private final JButton addSongButton = new JButton("Add");
     private final JButton deleteSongButton = new JButton("Delete");
     private final JButton reloadSongsButton = new JButton("↻");
 
     private final JLabel nowPlayingLabel = new JLabel("No loop playing");
     private final JButton previousButton = new JButton("⏮");
-    private final JButton pauseButton = new JButton("⏸️");
+    private final JButton pauseButton = new JButton("⏸");
     private final JButton skipButton = new JButton("⏭");
 
     // setup GUI
@@ -34,6 +35,10 @@ public class AppView extends JFrame {
 
     public JButton getDeleteSongButton() {
         return deleteSongButton;
+    }
+
+    public JButton getTrimSongButton() {
+        return trimSongButton;
     }
 
     public JButton getReloadSongsButton() {
@@ -58,6 +63,7 @@ public class AppView extends JFrame {
 
     private void addPlaylistPanel() {
         var editRow = new JPanel();
+        editRow.add(trimSongButton);
         editRow.add(addSongButton);
         editRow.add(deleteSongButton);
         editRow.add(reloadSongsButton);

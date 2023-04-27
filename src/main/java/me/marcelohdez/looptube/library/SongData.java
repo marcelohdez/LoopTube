@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.Optional;
 
 public class SongData {
-    private static final String EXTENSION = ".mp3";
+    public static final String EXTENSION = ".mp3";
 
     private File file;
     private String name;

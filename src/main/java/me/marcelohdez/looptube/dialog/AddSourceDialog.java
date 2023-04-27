@@ -4,11 +4,9 @@ import me.marcelohdez.looptube.ytdlp.SourceURLVerifier;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.util.Optional;
 
-public class AddSourceDialog extends LoopTubeDialog implements WindowListener {
+public class AddSourceDialog extends LoopTubeDialog {
     private final Component summoner;
     private final SourceURLVerifier verifier = new SourceURLVerifier();
     private final JTextField responseField = new JTextField();
@@ -17,8 +15,6 @@ public class AddSourceDialog extends LoopTubeDialog implements WindowListener {
         super("Add Loop Source", "Please enter a YouTube video link:");
 
         this.summoner = summoner;
-        addWindowListener(this);
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
         var cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(e -> {
@@ -49,28 +45,6 @@ public class AddSourceDialog extends LoopTubeDialog implements WindowListener {
         setLocationRelativeTo(summoner);
         setVisible(true);
 
-        if (!responseField.getText().isEmpty()) {
-            return Optional.of(responseField.getText());
-        }
-
-        return Optional.empty();
+        return responseField.getText().isEmpty() ? Optional.empty() : Optional.of(responseField.getText());
     }
-
-    @Override
-    public void windowClosing(WindowEvent e) {
-        dispose();
-    }
-
-    @Override
-    public void windowOpened(WindowEvent e) {}
-    @Override
-    public void windowClosed(WindowEvent e) {}
-    @Override
-    public void windowIconified(WindowEvent e) {}
-    @Override
-    public void windowDeiconified(WindowEvent e) {}
-    @Override
-    public void windowActivated(WindowEvent e) {}
-    @Override
-    public void windowDeactivated(WindowEvent e) {}
 }

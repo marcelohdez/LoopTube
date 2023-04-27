@@ -6,7 +6,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class DLWrapper {
+public final class DLWrapper {
     private static final String OUTPUT_DIR = AppController.LIBRARY_DIR + "%(title)s";
 
     private DLWrapper() {}
@@ -41,7 +41,7 @@ public class DLWrapper {
             // print said error to console
             String line = "\nYT-DLP Error:";
             while (line != null) {
-                System.out.println(line);
+                System.err.println(line);
                 line = br.readLine();
             }
 
