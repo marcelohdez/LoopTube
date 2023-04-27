@@ -7,12 +7,10 @@ import java.awt.*;
 import java.io.IOException;
 
 public class DLProgressDialog extends LoopTubeDialog {
-    private final Component summoner;
     private DLException exception;
 
     public DLProgressDialog(Component summoner) {
-        super("Progress", "A download is in progress...");
-        this.summoner = summoner;
+        super(summoner, "Progress", "A download is in progress...");
         pack();
     }
 

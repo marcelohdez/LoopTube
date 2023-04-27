@@ -1,10 +1,7 @@
 package me.marcelohdez.looptube;
 
 import javazoom.jl.decoder.JavaLayerException;
-import me.marcelohdez.looptube.dialog.AddSourceDialog;
-import me.marcelohdez.looptube.dialog.DLProgressDialog;
-import me.marcelohdez.looptube.dialog.ErrorDialog;
-import me.marcelohdez.looptube.dialog.TrimDialog;
+import me.marcelohdez.looptube.dialog.*;
 import me.marcelohdez.looptube.ffmpeg.TrimException;
 import me.marcelohdez.looptube.library.SongData;
 import me.marcelohdez.looptube.ytdlp.DLException;
@@ -157,13 +154,15 @@ public record AppController(AppModel model, AppView view) {
         var row = view.getSongsTable().getSelectedRow();
         if (row < 0) return; // nothing selected
 
-        var file = model.getSongsTableModel().get(row).getFile();
+        var song = model.getSongsTableModel().get(row);
+        var res = new AcceptDialog(view, "Are you sure you want to delete \"" + song + "\"?").response();
+        if (!res) return;
 
         try {
-            Desktop.getDesktop().moveToTrash(file);
+            Desktop.getDesktop().moveToTrash(song.getFile());
         } catch (UnsupportedOperationException ignored) {
-            if (!file.delete()) { // attempt to delete permanently
-                new ErrorDialog(view, "Could not delete " + file.getName());
+            if (!song.getFile().delete()) { // attempt to delete permanently
+                new ErrorDialog(view, "Could not delete " + song);
             }
         }
 

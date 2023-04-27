@@ -7,14 +7,11 @@ import java.awt.*;
 import java.util.Optional;
 
 public class AddSourceDialog extends LoopTubeDialog {
-    private final Component summoner;
     private final SourceURLVerifier verifier = new SourceURLVerifier();
     private final JTextField responseField = new JTextField();
 
     public AddSourceDialog(Component summoner) {
-        super("Add Loop Source", "Please enter a YouTube video link:");
-
-        this.summoner = summoner;
+        super(summoner, "Add Loop Source", "Please enter a YouTube video link:");
 
         var cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(e -> {

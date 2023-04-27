@@ -9,13 +9,11 @@ import java.awt.*;
 import java.io.IOException;
 
 public class FFMPEGDialog extends LoopTubeDialog {
-    private final Component summoner;
     private TrimException exception;
     private boolean result = true;
 
     public FFMPEGDialog(Component summoner) {
-        super("Trim in progress", "Your song is being trimmed...");
-        this.summoner = summoner;
+        super(summoner, "Trim in progress", "Your song is being trimmed...");
         pack();
     }
 

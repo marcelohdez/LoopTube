@@ -7,7 +7,7 @@ public class ErrorDialog extends LoopTubeDialog {
     private static final int WORDS_PER_LINE = 7;
 
     public ErrorDialog(Component summoner, String msg) {
-        super("Oh no!", "Error descriptor:");
+        super(summoner, "Oh no!", "Error descriptor:");
 
         var msgArea = new JTextArea(makeParagraph(msg));
         msgArea.setEditable(false);

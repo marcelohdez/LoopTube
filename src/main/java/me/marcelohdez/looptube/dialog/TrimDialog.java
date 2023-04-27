@@ -12,14 +12,12 @@ import java.text.ParseException;
 public class TrimDialog extends LoopTubeDialog {
     private static final String FORMAT = "#:##";
 
-    private final Component summoner;
     private final SongData song;
     private final JFormattedTextField startField = new JFormattedTextField(new MaskFormatter(FORMAT));
     private final JFormattedTextField endField = new JFormattedTextField(new MaskFormatter(FORMAT));
 
     public TrimDialog(Component summoner, SongData song) throws ParseException {
-        super("Trimming \"%s\"".formatted(song), "Select the range you would like to keep:");
-        this.summoner = summoner;
+        super(summoner, "Trimming \"%s\"".formatted(song), "Select the range you would like to keep:");
         this.song = song;
 
         startField.setColumns(3);

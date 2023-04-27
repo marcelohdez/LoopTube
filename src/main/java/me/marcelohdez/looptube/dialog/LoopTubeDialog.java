@@ -5,9 +5,12 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 abstract class LoopTubeDialog extends JDialog {
+    protected final Component summoner;
     protected final JLabel label = new JLabel();
 
-    public LoopTubeDialog(String title, String text) {
+    public LoopTubeDialog(Component summoner, String title, String text) {
+        this.summoner = summoner;
+
         setTitle(title);
         setResizable(false);
         setModalityType(ModalityType.APPLICATION_MODAL);
