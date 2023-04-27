@@ -10,8 +10,8 @@ public class AppView extends JFrame {
     private final JTable songsTable = new JTable();
 
     private final JButton trimSongButton = new JButton("✂");
-    private final JButton addSongButton = new JButton("Add");
-    private final JButton deleteSongButton = new JButton("Delete");
+    private final JButton addSongButton = new JButton("➕");
+    private final JButton deleteSongButton = new JButton("❌");
     private final JButton reloadSongsButton = new JButton("↻");
 
     private final JLabel nowPlayingLabel = new JLabel("No loop playing");
