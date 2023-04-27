@@ -59,6 +59,10 @@ public record AppController(AppModel model, AppView view) {
         view.getDeleteSongButton().addActionListener(e -> deleteSong());
         view.getTrimSongButton().addActionListener(e -> trimSong());
         view.getReloadSongsButton().addActionListener(e -> reloadSongs());
+
+        view.getLoopButton().addActionListener(e ->
+            model.getSongPlayer().setRepeating(view.getLoopButton().isSelected())
+        );
     }
 
     private void previousSong() {

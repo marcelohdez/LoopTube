@@ -5,6 +5,7 @@ import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.advanced.AdvancedPlayer;
 import javazoom.jl.player.advanced.PlaybackEvent;
 import javazoom.jl.player.advanced.PlaybackListener;
+import me.marcelohdez.looptube.dialog.ErrorDialog;
 
 import javax.swing.*;
 import java.io.*;
@@ -27,13 +28,23 @@ public class SongPlayer {
     private long startMS = -1;
     /** Whether to reset framePos next time player stops (used when starting new song) */
     private boolean resetPos = false;
+    /** Whether the player should attempt to loop when it finishes the song */
+    private boolean repeating = false;
 
     public boolean isPlaying() {
         return worker != null && !worker.isDone();
     }
 
+    public boolean isRepeating() {
+        return repeating;
+    }
+
     public Optional<File> getSource() {
         return Optional.ofNullable(source);
+    }
+
+    public void setRepeating(boolean b) {
+        repeating = b;
     }
 
     /** Changes this SongPlayer's source file, resetting the current position */
@@ -68,7 +79,16 @@ public class SongPlayer {
             @Override
             protected void done() {
                 // player already stops upon ending, so we only do it if cancelled: stops a NullPointerException
-                if (isCancelled()) player.stop();
+                if (isCancelled()) { // forcibly stopped
+                    player.stop();
+                } else if (repeating) {
+                    try {
+                        framePos = 0;
+                        start();
+                    } catch (JavaLayerException | IOException e) {
+                        new ErrorDialog(null, "Could not replay song! Is the file missing?");
+                    }
+                }
             }
         };
 

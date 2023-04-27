@@ -16,6 +16,8 @@ public class AppView extends JFrame {
     private final JButton pauseButton = new JButton("⏸");
     private final JButton skipButton = new JButton("⏭");
 
+    private final JToggleButton loopButton = new JToggleButton("∞");
+
     // setup GUI
     public AppView() {
         setTitle("LoopTube");
@@ -61,6 +63,10 @@ public class AppView extends JFrame {
         return skipButton;
     }
 
+    public JToggleButton getLoopButton() {
+        return loopButton;
+    }
+
     private void addPlaylistPanel() {
         var editRow = new JPanel();
         editRow.add(trimSongButton);
@@ -75,19 +81,26 @@ public class AppView extends JFrame {
     }
 
     private void addPlayingView() {
-        var view = new JPanel();
-        view.setLayout(new BoxLayout(view, BoxLayout.PAGE_AXIS));
-
-        var buttonRow = new JPanel();
-        buttonRow.add(previousButton);
-        buttonRow.add(pauseButton);
-        buttonRow.add(skipButton);
+        var view = new JPanel(new BorderLayout());
 
         var labelRow = new JPanel();
         labelRow.add(nowPlayingLabel);
 
-        view.add(labelRow);
-        view.add(buttonRow);
+        var playlistButtonsRow = new JPanel();
+        playlistButtonsRow.add(previousButton);
+        playlistButtonsRow.add(pauseButton);
+        playlistButtonsRow.add(skipButton);
+
+        var trackButtonsRow = new JPanel();
+        trackButtonsRow.add(loopButton);
+
+        var buttonPanel = new JPanel();
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.PAGE_AXIS));
+        buttonPanel.add(playlistButtonsRow);
+        buttonPanel.add(trackButtonsRow);
+
+        view.add(labelRow, BorderLayout.PAGE_START);
+        view.add(buttonPanel, BorderLayout.PAGE_END);
         add(view, BorderLayout.LINE_START);
     }
 }
