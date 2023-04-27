@@ -2,19 +2,20 @@
 Loop your favorite section(s) of YouTube videos and save them into playlists
 with this simple and modern Java Swing application, built using the MVC
 architecture. This program was created for educational purposes as a final
-project in an Introduction to Java college course.
+project in an Introduction to Java college course (COP 2800).
 
 ## Why?
-I created this program because... JSON, MVC, Java, and more.
+I wanted to dive head-first and solve an issue I faced myself: liking specific
+section(s) of a song but not being able to save them to loop separately.
 
 ## Setup
 ### Requirements
 The following
 programs or libraries are required for LoopTube to function:
-* **A [JDK] version 17 or higher:** To run Java.
-* **[ffmpeg]** (and ffprobe, which should come with [ffmpeg]): To extract the
-downloaded YouTube videos' audio.
-* **[yt-dlp]:** To download YouTube videos.
+* **[JDK] 17 or higher:** To run Java.
+* **[yt-dlp]:** To download audio.
+* **[ffmpeg]** (and ffprobe, which should come bundled): Lets yt-dlp 
+extract videos' audio.
 
 ### Installation
 After ensuring you have met the requirements above, the jar file for this
