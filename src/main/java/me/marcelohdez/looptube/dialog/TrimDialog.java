@@ -19,6 +19,7 @@ public class TrimDialog extends LoopTubeDialog {
     public TrimDialog(Component summoner, SongData song) throws ParseException {
         super(summoner, "Trimming \"%s\"".formatted(song), "Select the range you would like to keep:");
         this.song = song;
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE); // stops user from accepting accidentally
 
         startField.setColumns(3);
         endField.setColumns(3);
@@ -27,7 +28,21 @@ public class TrimDialog extends LoopTubeDialog {
         timeFieldsRow.add(startField);
         timeFieldsRow.add(endField);
 
+        var accept = new JButton("Ok");
+        accept.addActionListener(e -> dispose());
+
+        var cancel = new JButton("Cancel");
+        cancel.addActionListener(e -> {
+            startField.setText("");
+            dispose();
+        });
+
+        var buttonRow = new JPanel();
+        buttonRow.add(accept);
+        buttonRow.add(cancel);
+
         add(timeFieldsRow);
+        add(buttonRow, BorderLayout.PAGE_END);
         pack();
     }
 
