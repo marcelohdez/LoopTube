@@ -4,6 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 
 public class AppView extends JFrame {
+    public static final String ICON_PAUSED = "▶";
+    public static final String ICON_PLAYING = "⏸";
+
     private final JTable songsTable = new JTable();
 
     private final JButton trimSongButton = new JButton("✂");
@@ -13,7 +16,7 @@ public class AppView extends JFrame {
 
     private final JLabel nowPlayingLabel = new JLabel("No loop playing");
     private final JButton previousButton = new JButton("⏮");
-    private final JButton pauseButton = new JButton("⏸");
+    private final JButton pauseButton = new JButton(ICON_PAUSED);
     private final JButton skipButton = new JButton("⏭");
 
     private final JToggleButton loopButton = new JToggleButton("∞");

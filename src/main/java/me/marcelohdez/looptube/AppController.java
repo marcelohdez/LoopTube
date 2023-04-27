@@ -143,7 +143,11 @@ public record AppController(AppModel model, AppView view) {
         try {
             if (model.getSongPlayer().isPlaying()) {
                 model.getSongPlayer().stop();
-            } else model.getSongPlayer().start();
+                view.getPauseButton().setText(AppView.ICON_PAUSED); // run after stop/start in case exception is thrown
+            } else {
+                model.getSongPlayer().start();
+                view.getPauseButton().setText(AppView.ICON_PLAYING);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             new ErrorDialog(view, "Oops! Could not continue song.");
