@@ -17,6 +17,7 @@ import java.nio.file.NoSuchFileException;
 import java.text.ParseException;
 
 public record AppController(AppModel model, AppView view) {
+    private static final int MAX_NAME_CHAR = 30;
     private static final String LOOP_TUBE_DIR = // end with a separator to indicate as directory
             System.getProperty("user.home") + File.separatorChar + ".LoopTube" + File.separator;
     public static final String LIBRARY_DIR = LOOP_TUBE_DIR + "library" + File.separator;
@@ -117,7 +118,16 @@ public record AppController(AppModel model, AppView view) {
     private void playNewSong(SongData song) {
         try {
             model.getSongPlayer().setSource(song.getFile());
-            view.getNowPlayingLabel().setText(song.toString());
+
+            var title = song.toString();
+            // will split long titles like "this is my long title" -> "this is ...ng title"
+            if (title.length() > MAX_NAME_CHAR) {
+                final var tweener = "...";
+                final var limit = (MAX_NAME_CHAR - tweener.length()) / 2; // max chars on each half
+                title = title.substring(0, limit) + tweener + title.substring(title.length() - limit);
+            }
+
+            view.getNowPlayingLabel().setText(title);
             pauseOrPlay();
         } catch (IOException | JavaLayerException e) {
             e.printStackTrace();
