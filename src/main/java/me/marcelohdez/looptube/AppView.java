@@ -12,9 +12,9 @@ public class AppView extends JFrame {
     private final JButton trimSongButton = new JButton("✂");
     private final JButton addSongButton = new JButton("➕");
     private final JButton deleteSongButton = new JButton("❌");
-    private final JButton reloadSongsButton = new JButton("↻");
+    private final JButton reloadSongsButton = new JButton("\uD83D\uDD04");
 
-    private final JLabel nowPlayingLabel = new JLabel("No loop playing");
+    private final JLabel nowPlayingLabel = new JLabel("Nothing is playing");
     private final JButton previousButton = new JButton("⏮");
     private final JButton pauseButton = new JButton(ICON_PAUSED);
     private final JButton skipButton = new JButton("⏭");
@@ -71,15 +71,19 @@ public class AppView extends JFrame {
     }
 
     private void addPlaylistPanel() {
-        var editRow = new JPanel();
-        editRow.add(trimSongButton);
-        editRow.add(addSongButton);
-        editRow.add(deleteSongButton);
-        editRow.add(reloadSongsButton);
+        var buttonsRow = new JPanel();
+        buttonsRow.setLayout(new BoxLayout(buttonsRow, BoxLayout.PAGE_AXIS));
+        buttonsRow.add(trimSongButton);
+        buttonsRow.add(addSongButton);
+        buttonsRow.add(deleteSongButton);
+        buttonsRow.add(reloadSongsButton);
+
+        var buttonPanel = new JPanel(new BorderLayout());
+        buttonPanel.add(buttonsRow, BorderLayout.PAGE_END);
 
         var pnl = new JPanel(new BorderLayout());
         pnl.add(new JScrollPane(songsTable));
-        pnl.add(editRow, BorderLayout.PAGE_END);
+        pnl.add(buttonPanel, BorderLayout.LINE_START);
         add(pnl);
     }
 
@@ -93,17 +97,10 @@ public class AppView extends JFrame {
         playlistButtonsRow.add(previousButton);
         playlistButtonsRow.add(pauseButton);
         playlistButtonsRow.add(skipButton);
-
-        var trackButtonsRow = new JPanel();
-        trackButtonsRow.add(loopButton);
-
-        var buttonPanel = new JPanel();
-        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.PAGE_AXIS));
-        buttonPanel.add(playlistButtonsRow);
-        buttonPanel.add(trackButtonsRow);
+        playlistButtonsRow.add(loopButton);
 
         view.add(labelRow, BorderLayout.PAGE_START);
-        view.add(buttonPanel, BorderLayout.PAGE_END);
-        add(view, BorderLayout.LINE_START);
+        view.add(playlistButtonsRow, BorderLayout.PAGE_END);
+        add(view, BorderLayout.PAGE_START);
     }
 }
