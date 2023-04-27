@@ -15,7 +15,7 @@ import java.util.Optional;
  * An ergonomic wrapper over jLayer's AdvancedPlayer, with support for
  * stopping and resuming. Plays music on a worker thread to not stop GUI.
  */
-public class SongPlayer {
+public class SongPlayer extends PlaybackListener {
     private SwingWorker<Boolean, Integer> worker;
 
     private File source;
@@ -24,7 +24,7 @@ public class SongPlayer {
     private double framerate = 0.0f;
     /** Current/last stopped at position in MPEG frames */
     private int framePos = 0;
-    /** System milliseconds when song is started, should only change in consumePlaybackEvents() */
+    /** System milliseconds when song is started, should only change in PlaybackListener events */
     private long startMS = -1;
     /** Whether to reset framePos next time player stops (used when starting new song) */
     private boolean resetPos = false;
@@ -33,10 +33,6 @@ public class SongPlayer {
 
     public boolean isPlaying() {
         return worker != null && !worker.isDone();
-    }
-
-    public boolean isRepeating() {
-        return repeating;
     }
 
     public Optional<File> getSource() {
@@ -54,7 +50,10 @@ public class SongPlayer {
         resetPos = true;
 
         var bs = new Bitstream(new FileInputStream(source));
-        framerate = bs.readFrame().ms_per_frame();
+        var header = bs.readFrame();
+        if (header == null) throw new IOException("File does not contain frame data!");
+        framerate = header.ms_per_frame();
+
         stop();
     }
 
@@ -83,8 +82,7 @@ public class SongPlayer {
                     player.stop();
                 } else if (repeating) {
                     try {
-                        framePos = 0;
-                        start();
+                        restart();
                     } catch (JavaLayerException | IOException e) {
                         new ErrorDialog(null, "Could not replay song! Is the file missing?");
                     }
@@ -103,6 +101,11 @@ public class SongPlayer {
         resetPos = false; // continue saving positions on next stops
     }
 
+    private void restart() throws IOException, JavaLayerException {
+        framePos = 0;
+        start();
+    }
+
     /**
      * Will reset song if it is more than 3 seconds from start, and return false.
      * Otherwise, it will only return true (but will continue playing if caller does not
@@ -112,8 +115,7 @@ public class SongPlayer {
      */
     public boolean previous() throws IOException, JavaLayerException {
         if (System.currentTimeMillis() - startMS > 3000) {
-            setSource(source);
-            start();
+            restart();
             return false;
         }
 
@@ -123,23 +125,20 @@ public class SongPlayer {
     private void createPlayerFromSource() throws JavaLayerException, IOException {
         if (source == null) return;
         player = new AdvancedPlayer(new FileInputStream(source));
-        player.setPlayBackListener(consumePlaybackEvents());
+        player.setPlayBackListener(this);
     }
 
-    private PlaybackListener consumePlaybackEvents() {
-        return new PlaybackListener() {
-            @Override
-            public void playbackStarted(PlaybackEvent evt) {
-                startMS = System.currentTimeMillis();
-            }
-            @Override
-            public void playbackFinished(PlaybackEvent evt) {
-                startMS = -1; // no longer playing
-                // after some digging, found out evt.getFrame actually returns milliseconds... here we fix it:
-                // we add to get the difference since last unpause
-                framePos += (int) ((evt.getFrame() / framerate) + 0.5); // + 0.5 rounds to nearest int
-                if (resetPos) framePos = 0;
-            }
-        };
+    @Override
+    public void playbackStarted(PlaybackEvent evt) {
+        startMS = System.currentTimeMillis();
+    }
+
+    @Override
+    public void playbackFinished(PlaybackEvent evt) {
+        startMS = -1; // no longer playing
+        // after some digging, found out evt.getFrame actually returns milliseconds... here we fix it:
+        // we add to get the difference since last unpause
+        framePos += (int) ((evt.getFrame() / framerate) + 0.5); // + 0.5 rounds to nearest int
+        if (resetPos) framePos = 0;
     }
 }
