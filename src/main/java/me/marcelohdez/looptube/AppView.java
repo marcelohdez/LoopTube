@@ -26,6 +26,7 @@ public class AppView extends JFrame {
         setTitle("LoopTube");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
+        addToolTips();
         addPlaylistPanel();
         addPlayingView();
     }
@@ -68,6 +69,18 @@ public class AppView extends JFrame {
 
     public JToggleButton getLoopButton() {
         return loopButton;
+    }
+
+    private void addToolTips() {
+        trimSongButton.setToolTipText("Trim song");
+        addSongButton.setToolTipText("Add new song");
+        deleteSongButton.setToolTipText("Delete song");
+        reloadSongsButton.setToolTipText("Reload library from disk");
+
+        previousButton.setToolTipText("Rewind/previous track");
+        pauseButton.setToolTipText("Pause track");
+        skipButton.setToolTipText("Skip track");
+        loopButton.setToolTipText("Loop track");
     }
 
     private void addPlaylistPanel() {
