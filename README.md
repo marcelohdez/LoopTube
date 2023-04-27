@@ -4,6 +4,9 @@ with this simple and modern Java Swing application, built using the MVC
 architecture. This program was created for educational purposes as a final
 project in an Introduction to Java college course (COP 2800).
 
+### Illustration
+![looptubegif](https://user-images.githubusercontent.com/76508651/234811865-33d9dba3-58ca-43f6-b4d1-762cf6694efe.gif)
+
 ## Why?
 I wanted to dive head-first and solve an issue I faced myself: liking specific
 section(s) of a song but not being able to save them to loop separately.
