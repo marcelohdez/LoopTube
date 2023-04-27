@@ -137,7 +137,7 @@ public record AppController(AppModel model, AppView view) {
     }
 
     private void addSong() {
-        var maybeUrl = new AddSourceDialog(view).response();
+        var maybeUrl = new AddSongDialog(view).response();
         if (maybeUrl.isEmpty()) return;
 
         var url = maybeUrl.get();
