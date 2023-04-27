@@ -116,8 +116,12 @@ public record AppController(AppModel model, AppView view) {
     }
 
     private void playNewSong(SongData song) {
+        // do not replay current song when clicked:
+        var player = model.getSongPlayer();
+        if (player.getSource().isPresent() && song.getFile() == player.getSource().get()) return;
+
         try {
-            model.getSongPlayer().setSource(song.getFile());
+            player.setSource(song.getFile());
 
             var title = song.toString();
             // will split long titles like "this is my long title" -> "this is ...ng title"
