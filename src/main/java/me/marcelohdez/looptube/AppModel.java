@@ -1,6 +1,7 @@
 package me.marcelohdez.looptube;
 
 import me.marcelohdez.looptube.library.SongPlayer;
+import me.marcelohdez.looptube.library.SongsTableModel;
 
 public class AppModel {
     private final SongsTableModel songsTableModel = new SongsTableModel();

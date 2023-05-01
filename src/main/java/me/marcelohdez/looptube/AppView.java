@@ -10,9 +10,9 @@ public class AppView extends JFrame {
     private final JTable songsTable = new JTable();
 
     private final JButton trimSongButton = new JButton("✂");
-    private final JButton addSongButton = new JButton("➕");
-    private final JButton deleteSongButton = new JButton("❌");
-    private final JButton reloadSongsButton = new JButton("\uD83D\uDD04");
+    private final JButton addSongButton = new JButton("+");
+    private final JButton deleteSongButton = new JButton("-");
+    private final JButton reloadSongsButton = new JButton("↻");
 
     private final JLabel nowPlayingLabel = new JLabel("Nothing is playing");
     private final JButton previousButton = new JButton("⏮");
@@ -26,9 +26,10 @@ public class AppView extends JFrame {
         setTitle("LoopTube");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        addToolTips();
-        addPlaylistPanel();
-        addPlayingView();
+        setToolTips();
+        add(playingButtonsPanel(), BorderLayout.PAGE_START);
+        add(new JScrollPane(songsTable));
+        add(playlistButtonsPanel(), BorderLayout.PAGE_END);
     }
 
     public JTable getSongsTable() {
@@ -71,7 +72,7 @@ public class AppView extends JFrame {
         return loopButton;
     }
 
-    private void addToolTips() {
+    private void setToolTips() {
         trimSongButton.setToolTipText("Trim song");
         addSongButton.setToolTipText("Add new song");
         deleteSongButton.setToolTipText("Delete song");
@@ -83,24 +84,17 @@ public class AppView extends JFrame {
         loopButton.setToolTipText("Loop track");
     }
 
-    private void addPlaylistPanel() {
+    private JPanel playlistButtonsPanel() {
         var buttonsRow = new JPanel();
-        buttonsRow.setLayout(new BoxLayout(buttonsRow, BoxLayout.PAGE_AXIS));
         buttonsRow.add(trimSongButton);
         buttonsRow.add(addSongButton);
         buttonsRow.add(deleteSongButton);
         buttonsRow.add(reloadSongsButton);
 
-        var buttonPanel = new JPanel(new BorderLayout());
-        buttonPanel.add(buttonsRow, BorderLayout.PAGE_END);
-
-        var pnl = new JPanel(new BorderLayout());
-        pnl.add(new JScrollPane(songsTable));
-        pnl.add(buttonPanel, BorderLayout.LINE_START);
-        add(pnl);
+        return buttonsRow;
     }
 
-    private void addPlayingView() {
+    private JPanel playingButtonsPanel() {
         var view = new JPanel(new BorderLayout());
 
         var labelRow = new JPanel();
@@ -114,6 +108,6 @@ public class AppView extends JFrame {
 
         view.add(labelRow, BorderLayout.PAGE_START);
         view.add(playlistButtonsRow, BorderLayout.PAGE_END);
-        add(view, BorderLayout.PAGE_START);
+        return view;
     }
 }

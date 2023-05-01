@@ -4,6 +4,7 @@ import javazoom.jl.decoder.JavaLayerException;
 import me.marcelohdez.looptube.dialog.*;
 import me.marcelohdez.looptube.ffmpeg.TrimException;
 import me.marcelohdez.looptube.library.SongData;
+import me.marcelohdez.looptube.library.SongsTableModel;
 import me.marcelohdez.looptube.ytdlp.DLException;
 
 import javax.swing.*;
@@ -31,19 +32,15 @@ public record AppController(AppModel model, AppView view) {
         view.getSongsTable().getColumn(SongsTableModel.COL_NUM).setMaxWidth(30); // arbitrary; stops column being massive
         SwingUtilities.invokeLater(this::reloadSongs);
 
-        // make initial table size comfortable
-        var tableSize = view.getSongsTable().getPreferredSize();
-        view.getSongsTable().setPreferredScrollableViewportSize(
-                new Dimension((int)(tableSize.width * 1.5), tableSize.height)
-        );
-
         attachActionListeners();
 
+        // let table be shrunken
+        view.getSongsTable().setPreferredScrollableViewportSize(null);
         // set minimum size enough to fit everything:
         view.pack();
         view.setMinimumSize(view.getSize());
 
-        view.setSize(400, 250);
+        view.setSize(view.getWidth() + 60, view.getHeight() + 120); // set default size more comfortable
         view.setLocationRelativeTo(null); // center on screen
         view.setVisible(true);
     }

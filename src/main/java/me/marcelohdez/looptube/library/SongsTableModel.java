@@ -1,6 +1,4 @@
-package me.marcelohdez.looptube;
-
-import me.marcelohdez.looptube.library.SongData;
+package me.marcelohdez.looptube.library;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -61,9 +59,11 @@ public class SongsTableModel implements TableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        return columnIndex == 0 ?
-                rowIndex + 1 : // row index
-                songsList.get(rowIndex); // song data
+        return switch (COLUMNS[columnIndex]) {
+            case COL_NUM -> rowIndex + 1; // row index
+            case COL_NAME -> songsList.get(rowIndex);
+            default -> throw new IllegalStateException("Unexpected column: " + COLUMNS[columnIndex]);
+        };
     }
 
     @Override
