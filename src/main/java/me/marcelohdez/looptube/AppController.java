@@ -18,7 +18,7 @@ import java.nio.file.NoSuchFileException;
 import java.text.ParseException;
 
 public record AppController(AppModel model, AppView view) {
-    private static final int MAX_NAME_CHAR = 30;
+    private static final int MAX_NAME_CHAR = 40;
     private static final String LOOP_TUBE_DIR = // end with a separator to indicate as directory
             System.getProperty("user.home") + File.separatorChar + ".LoopTube" + File.separator;
     public static final String LIBRARY_DIR = LOOP_TUBE_DIR + "library" + File.separator;
