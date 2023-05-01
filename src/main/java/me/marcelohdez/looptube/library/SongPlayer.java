@@ -26,8 +26,6 @@ public class SongPlayer extends PlaybackListener {
     private int framePos = 0;
     /** System milliseconds when song is started, should only change in PlaybackListener events */
     private long startMS = -1;
-    /** Whether to reset framePos next time player stops (used when starting new song) */
-    private boolean resetPos = false;
     /** Whether the player should attempt to loop when it finishes the song */
     private boolean repeating = false;
 
@@ -46,15 +44,13 @@ public class SongPlayer extends PlaybackListener {
     /** Changes this SongPlayer's source file, resetting the current position */
     public void setSource(File f) throws JavaLayerException, IOException {
         source = f;
+        stop();
         framePos = 0;
-        resetPos = true;
 
         var bs = new Bitstream(new FileInputStream(source));
         var header = bs.readFrame();
         if (header == null) throw new IOException("File does not contain frame data!");
         framerate = header.ms_per_frame();
-
-        stop();
     }
 
     /**
@@ -98,10 +94,10 @@ public class SongPlayer extends PlaybackListener {
             worker.cancel(true);
             worker = null;
         }
-        resetPos = false; // continue saving positions on next stops
     }
 
     private void restart() throws IOException, JavaLayerException {
+        stop();
         framePos = 0;
         start();
     }
@@ -139,6 +135,5 @@ public class SongPlayer extends PlaybackListener {
         // after some digging, found out evt.getFrame actually returns milliseconds... here we fix it:
         // we add to get the difference since last unpause
         framePos += (int) ((evt.getFrame() / framerate) + 0.5); // + 0.5 rounds to nearest int
-        if (resetPos) framePos = 0;
     }
 }
