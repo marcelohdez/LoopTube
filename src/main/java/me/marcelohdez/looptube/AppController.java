@@ -17,7 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.text.ParseException;
 
-public record AppController(AppModel model, AppView view) {
+public record AppController(AppModel model, AppView view) implements MouseListener {
     private static final int MAX_NAME_CHAR = 40;
     private static final String LOOP_TUBE_DIR = // end with a separator to indicate as directory
             System.getProperty("user.home") + File.separatorChar + ".LoopTube" + File.separator;
@@ -27,7 +27,7 @@ public record AppController(AppModel model, AppView view) {
         System.out.printf("Starting LoopTube with library @ %s\n", LIBRARY_DIR);
 
         view.getSongsTable().setModel(model.getSongsTableModel());
-        view.getSongsTable().addMouseListener(captureSongSelections());
+        view.getSongsTable().addMouseListener(this);
         view.getSongsTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         view.getSongsTable().getColumn(SongsTableModel.COL_NUM).setMaxWidth(30); // arbitrary; stops column being massive
         SwingUtilities.invokeLater(this::reloadSongs);
@@ -222,25 +222,21 @@ public record AppController(AppModel model, AppView view) {
         }
     }
 
-    private MouseListener captureSongSelections() {
-        return new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {}
-            @Override
-            public void mousePressed(MouseEvent e) {}
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                if (e.getButton() != MouseEvent.BUTTON1) return;
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        if (e.getButton() != MouseEvent.BUTTON1) return;
 
-                var row = view.getSongsTable().rowAtPoint(e.getPoint());
-                if (row < 0) return;
+        var row = view.getSongsTable().rowAtPoint(e.getPoint());
+        if (row < 0) return;
 
-                playNewSong(model.getSongsTableModel().get(row));
-            }
-            @Override
-            public void mouseEntered(MouseEvent e) {}
-            @Override
-            public void mouseExited(MouseEvent e) {}
-        };
+        playNewSong(model.getSongsTableModel().get(row));
     }
+    @Override
+    public void mouseClicked(MouseEvent e) {}
+    @Override
+    public void mousePressed(MouseEvent e) {}
+    @Override
+    public void mouseEntered(MouseEvent e) {}
+    @Override
+    public void mouseExited(MouseEvent e) {}
 }
