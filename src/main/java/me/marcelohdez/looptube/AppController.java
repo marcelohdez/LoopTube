@@ -4,6 +4,8 @@ import javazoom.jl.decoder.JavaLayerException;
 import me.marcelohdez.looptube.dialog.*;
 import me.marcelohdez.looptube.ffmpeg.TrimException;
 import me.marcelohdez.looptube.library.SongData;
+import me.marcelohdez.looptube.library.SongEventListener;
+import me.marcelohdez.looptube.library.SongsTableModel;
 import me.marcelohdez.looptube.ytdlp.DLException;
 
 import javax.swing.*;
@@ -16,8 +18,8 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.text.ParseException;
 
-public record AppController(AppModel model, AppView view) {
-    private static final int MAX_NAME_CHAR = 30;
+public record AppController(AppModel model, AppView view) implements MouseListener, SongEventListener {
+    private static final int MAX_NAME_CHAR = 40;
     private static final String LOOP_TUBE_DIR = // end with a separator to indicate as directory
             System.getProperty("user.home") + File.separatorChar + ".LoopTube" + File.separator;
     public static final String LIBRARY_DIR = LOOP_TUBE_DIR + "library" + File.separator;
@@ -26,24 +28,21 @@ public record AppController(AppModel model, AppView view) {
         System.out.printf("Starting LoopTube with library @ %s\n", LIBRARY_DIR);
 
         view.getSongsTable().setModel(model.getSongsTableModel());
-        view.getSongsTable().addMouseListener(captureSongSelections());
+        view.getSongsTable().addMouseListener(this);
         view.getSongsTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         view.getSongsTable().getColumn(SongsTableModel.COL_NUM).setMaxWidth(30); // arbitrary; stops column being massive
         SwingUtilities.invokeLater(this::reloadSongs);
 
-        // make initial table size comfortable
-        var tableSize = view.getSongsTable().getPreferredSize();
-        view.getSongsTable().setPreferredScrollableViewportSize(
-                new Dimension((int)(tableSize.width * 1.5), tableSize.height)
-        );
-
         attachActionListeners();
+        model.getSongPlayer().setSongEventListener(this);
 
+        // let table be shrunken
+        view.getSongsTable().setPreferredScrollableViewportSize(null);
         // set minimum size enough to fit everything:
         view.pack();
         view.setMinimumSize(view.getSize());
 
-        view.setSize(400, 250);
+        view.setSize(view.getWidth() + 60, view.getHeight() + 120); // set default size more comfortable
         view.setLocationRelativeTo(null); // center on screen
         view.setVisible(true);
     }
@@ -141,12 +140,15 @@ public record AppController(AppModel model, AppView view) {
 
     private void pauseOrPlay() {
         try {
-            if (model.getSongPlayer().isPlaying()) {
-                model.getSongPlayer().stop();
-            } else model.getSongPlayer().start();
+            var player = model.getSongPlayer();
+            if (player.isPlaying()) {
+                player.stop();
+            } else {
+                player.start();
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            new ErrorDialog(view, "Oops! Could not continue song.");
+            new ErrorDialog(view, "Oops! Could not play/pause song.");
         }
     }
 
@@ -221,25 +223,36 @@ public record AppController(AppModel model, AppView view) {
         }
     }
 
-    private MouseListener captureSongSelections() {
-        return new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {}
-            @Override
-            public void mousePressed(MouseEvent e) {}
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                if (e.getButton() != MouseEvent.BUTTON1) return;
-
-                var row = view.getSongsTable().rowAtPoint(e.getPoint());
-                if (row < 0) return;
-
-                playNewSong(model.getSongsTableModel().get(row));
-            }
-            @Override
-            public void mouseEntered(MouseEvent e) {}
-            @Override
-            public void mouseExited(MouseEvent e) {}
-        };
+    @Override
+    public void songIsPlaying() {
+        view.getPauseButton().setText(AppView.ICON_PLAYING);
     }
+
+    @Override
+    public void songStopped() {
+        view.getPauseButton().setText(AppView.ICON_PAUSED);
+    }
+
+    @Override
+    public void songFinished() {
+        nextSong();
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        if (e.getButton() != MouseEvent.BUTTON1) return;
+
+        var row = view.getSongsTable().rowAtPoint(e.getPoint());
+        if (row < 0) return;
+
+        playNewSong(model.getSongsTableModel().get(row));
+    }
+    @Override
+    public void mouseClicked(MouseEvent e) {}
+    @Override
+    public void mousePressed(MouseEvent e) {}
+    @Override
+    public void mouseEntered(MouseEvent e) {}
+    @Override
+    public void mouseExited(MouseEvent e) {}
 }

@@ -4,16 +4,19 @@ import javax.swing.*;
 import java.awt.*;
 
 public class AppView extends JFrame {
+    public static final String ICON_PAUSED = "▶";
+    public static final String ICON_PLAYING = "⏸";
+
     private final JTable songsTable = new JTable();
 
     private final JButton trimSongButton = new JButton("✂");
-    private final JButton addSongButton = new JButton("Add");
-    private final JButton deleteSongButton = new JButton("Delete");
+    private final JButton addSongButton = new JButton("+");
+    private final JButton deleteSongButton = new JButton("-");
     private final JButton reloadSongsButton = new JButton("↻");
 
-    private final JLabel nowPlayingLabel = new JLabel("No loop playing");
+    private final JLabel nowPlayingLabel = new JLabel("Nothing is playing");
     private final JButton previousButton = new JButton("⏮");
-    private final JButton pauseButton = new JButton("⏸");
+    private final JButton pauseButton = new JButton(ICON_PAUSED);
     private final JButton skipButton = new JButton("⏭");
 
     private final JToggleButton loopButton = new JToggleButton("∞");
@@ -23,8 +26,10 @@ public class AppView extends JFrame {
         setTitle("LoopTube");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        addPlaylistPanel();
-        addPlayingView();
+        setToolTips();
+        add(playingButtonsPanel(), BorderLayout.PAGE_START);
+        add(new JScrollPane(songsTable));
+        add(playlistButtonsPanel(), BorderLayout.PAGE_END);
     }
 
     public JTable getSongsTable() {
@@ -67,20 +72,29 @@ public class AppView extends JFrame {
         return loopButton;
     }
 
-    private void addPlaylistPanel() {
-        var editRow = new JPanel();
-        editRow.add(trimSongButton);
-        editRow.add(addSongButton);
-        editRow.add(deleteSongButton);
-        editRow.add(reloadSongsButton);
+    private void setToolTips() {
+        trimSongButton.setToolTipText("Trim song");
+        addSongButton.setToolTipText("Add new song");
+        deleteSongButton.setToolTipText("Delete song");
+        reloadSongsButton.setToolTipText("Reload library from disk");
 
-        var pnl = new JPanel(new BorderLayout());
-        pnl.add(new JScrollPane(songsTable));
-        pnl.add(editRow, BorderLayout.PAGE_END);
-        add(pnl);
+        previousButton.setToolTipText("Rewind/previous track");
+        pauseButton.setToolTipText("Pause track");
+        skipButton.setToolTipText("Skip track");
+        loopButton.setToolTipText("Loop track");
     }
 
-    private void addPlayingView() {
+    private JPanel playlistButtonsPanel() {
+        var buttonsRow = new JPanel();
+        buttonsRow.add(trimSongButton);
+        buttonsRow.add(addSongButton);
+        buttonsRow.add(deleteSongButton);
+        buttonsRow.add(reloadSongsButton);
+
+        return buttonsRow;
+    }
+
+    private JPanel playingButtonsPanel() {
         var view = new JPanel(new BorderLayout());
 
         var labelRow = new JPanel();
@@ -90,17 +104,10 @@ public class AppView extends JFrame {
         playlistButtonsRow.add(previousButton);
         playlistButtonsRow.add(pauseButton);
         playlistButtonsRow.add(skipButton);
-
-        var trackButtonsRow = new JPanel();
-        trackButtonsRow.add(loopButton);
-
-        var buttonPanel = new JPanel();
-        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.PAGE_AXIS));
-        buttonPanel.add(playlistButtonsRow);
-        buttonPanel.add(trackButtonsRow);
+        playlistButtonsRow.add(loopButton);
 
         view.add(labelRow, BorderLayout.PAGE_START);
-        view.add(buttonPanel, BorderLayout.PAGE_END);
-        add(view, BorderLayout.LINE_START);
+        view.add(playlistButtonsRow, BorderLayout.PAGE_END);
+        return view;
     }
 }
