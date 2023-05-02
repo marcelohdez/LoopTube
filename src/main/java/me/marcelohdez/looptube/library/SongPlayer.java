@@ -20,6 +20,7 @@ public class SongPlayer extends PlaybackListener {
 
     private File source;
     private AdvancedPlayer player;
+    private SongEventListener songEventListener;
     /** Milliseconds per frame, set when source is changed */
     private double framerate = 0.0f;
     /** Current/last stopped at position in MPEG frames */
@@ -39,6 +40,10 @@ public class SongPlayer extends PlaybackListener {
 
     public void setRepeating(boolean b) {
         repeating = b;
+    }
+
+    public void setSongEventListener(SongEventListener l) {
+        songEventListener = l;
     }
 
     /** Changes this SongPlayer's source file, resetting the current position */
@@ -82,6 +87,9 @@ public class SongPlayer extends PlaybackListener {
                     } catch (JavaLayerException | IOException e) {
                         new ErrorDialog(null, "Could not replay song! Is the file missing?");
                     }
+                } else {
+                    if (songEventListener != null)
+                        songEventListener.songFinished();
                 }
             }
         };
@@ -89,6 +97,7 @@ public class SongPlayer extends PlaybackListener {
         worker.execute();
     }
 
+    /** Will stop the currently playing audio and save its position. Reset framePos after this to restart. */
     public void stop() {
         if (worker != null) {
             worker.cancel(true);
@@ -127,6 +136,8 @@ public class SongPlayer extends PlaybackListener {
     @Override
     public void playbackStarted(PlaybackEvent evt) {
         startMS = System.currentTimeMillis();
+        if (songEventListener != null)
+            songEventListener.songIsPlaying();
     }
 
     @Override
@@ -135,5 +146,8 @@ public class SongPlayer extends PlaybackListener {
         // after some digging, found out evt.getFrame actually returns milliseconds... here we fix it:
         // we add to get the difference since last unpause
         framePos += (int) ((evt.getFrame() / framerate) + 0.5); // + 0.5 rounds to nearest int
+
+        if (songEventListener != null)
+            songEventListener.songStopped();
     }
 }

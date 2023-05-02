@@ -4,6 +4,7 @@ import javazoom.jl.decoder.JavaLayerException;
 import me.marcelohdez.looptube.dialog.*;
 import me.marcelohdez.looptube.ffmpeg.TrimException;
 import me.marcelohdez.looptube.library.SongData;
+import me.marcelohdez.looptube.library.SongEventListener;
 import me.marcelohdez.looptube.library.SongsTableModel;
 import me.marcelohdez.looptube.ytdlp.DLException;
 
@@ -17,7 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.text.ParseException;
 
-public record AppController(AppModel model, AppView view) implements MouseListener {
+public record AppController(AppModel model, AppView view) implements MouseListener, SongEventListener {
     private static final int MAX_NAME_CHAR = 40;
     private static final String LOOP_TUBE_DIR = // end with a separator to indicate as directory
             System.getProperty("user.home") + File.separatorChar + ".LoopTube" + File.separator;
@@ -33,6 +34,7 @@ public record AppController(AppModel model, AppView view) implements MouseListen
         SwingUtilities.invokeLater(this::reloadSongs);
 
         attachActionListeners();
+        model.getSongPlayer().setSongEventListener(this);
 
         // let table be shrunken
         view.getSongsTable().setPreferredScrollableViewportSize(null);
@@ -138,16 +140,15 @@ public record AppController(AppModel model, AppView view) implements MouseListen
 
     private void pauseOrPlay() {
         try {
-            if (model.getSongPlayer().isPlaying()) {
-                model.getSongPlayer().stop();
-                view.getPauseButton().setText(AppView.ICON_PAUSED); // run after stop/start in case exception is thrown
+            var player = model.getSongPlayer();
+            if (player.isPlaying()) {
+                player.stop();
             } else {
-                model.getSongPlayer().start();
-                view.getPauseButton().setText(AppView.ICON_PLAYING);
+                player.start();
             }
         } catch (Exception e) {
             e.printStackTrace();
-            new ErrorDialog(view, "Oops! Could not continue song.");
+            new ErrorDialog(view, "Oops! Could not play/pause song.");
         }
     }
 
@@ -220,6 +221,21 @@ public record AppController(AppModel model, AppView view) implements MouseListen
                 model.getSongsTableModel().add(maybeMp3.get());
             }
         }
+    }
+
+    @Override
+    public void songIsPlaying() {
+        view.getPauseButton().setText(AppView.ICON_PLAYING);
+    }
+
+    @Override
+    public void songStopped() {
+        view.getPauseButton().setText(AppView.ICON_PAUSED);
+    }
+
+    @Override
+    public void songFinished() {
+        nextSong();
     }
 
     @Override
