@@ -122,20 +122,31 @@ public record AppController(AppModel model, AppView view) implements MouseListen
         try {
             player.setSource(song.getFile());
 
-            var title = song.toString();
-            // will split long titles like "this is my long title" -> "this is ...ng title"
-            if (title.length() > MAX_NAME_CHAR) {
-                final var tweener = "...";
-                final var limit = (MAX_NAME_CHAR - tweener.length()) / 2; // max chars on each half
-                title = title.substring(0, limit) + tweener + title.substring(title.length() - limit);
-            }
-
-            view.getNowPlayingLabel().setText(title);
+            selectSourceInTable(song.getFile());
+            setPlayerTitleTo(song.toString());
             pauseOrPlay();
         } catch (IOException | JavaLayerException e) {
             e.printStackTrace();
             new ErrorDialog(view, "Oops! Could not play file.");
         }
+    }
+
+    /** Will make the view's songs table select the index with the given file as source */
+    private void selectSourceInTable(File source) {
+        var nowPlayingIndex = findSongFileIndex(source);
+        view.getSongsTable().setRowSelectionInterval(nowPlayingIndex, nowPlayingIndex);
+    }
+
+    /** Will set the player title to the given text, if too long it will shrink it */
+    private void setPlayerTitleTo(String title) {
+        // will split long titles like "this is my long title" -> "this is ...ng title"
+        if (title.length() > MAX_NAME_CHAR) {
+            final var tweener = "...";
+            final var limit = (MAX_NAME_CHAR - tweener.length()) / 2; // max chars on each half
+            title = title.substring(0, limit) + tweener + title.substring(title.length() - limit);
+        }
+
+        view.getNowPlayingLabel().setText(title);
     }
 
     private void pauseOrPlay() {
